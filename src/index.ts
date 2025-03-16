@@ -4,12 +4,8 @@ import { secureHeaders } from 'hono/secure-headers'
 import { cors } from 'hono/cors'
 import { prettyJSON } from 'hono/pretty-json'
 import { HTTPException } from 'hono/http-exception'
-import { CloudflareBindings, ErrorResponse } from './types'
-
-// Import route modules
-import adminRoutes from './routes/admin'
-import imageRoutes from './routes/images'
-import publicRoutes from './routes/public'
+import imageRoutes from './images/image.routes'
+import { showRoutes } from 'hono/dev'
 
 const app = new Hono<{ Bindings: CloudflareBindings }>()
 
@@ -28,14 +24,15 @@ app.use(
 )
 app.use('*', prettyJSON())
 
+app.route('/api/v0', imageRoutes)
+
 // Global error handler
 app.onError((err, c) => {
-  console.error(`[ERROR] ${err.message}`, err.stack)
+  console.error(`${err.message}\n`, err.stack)
 
   // Handle Hono's HTTPException
   if (err instanceof HTTPException) {
-    const errorResponse: ErrorResponse = {
-      success: false,
+    const errorResponse = {
       error: err.message,
       status: err.status,
     }
@@ -43,27 +40,23 @@ app.onError((err, c) => {
   }
 
   // Handle other errors
-  const errorResponse: ErrorResponse = {
-    success: false,
+  const errorResponse = {
     error: 'Internal Server Error',
     status: 500,
   }
   return c.json(errorResponse, 500)
 })
 
-// Mount routes
-app.route('/admin', adminRoutes)
-app.route('/api/v1/images', imageRoutes)
-app.route('/', publicRoutes)
-
 // Catch-all route for 404s
 app.notFound((c) => {
-  const errorResponse: ErrorResponse = {
-    success: false,
+  const errorResponse = {
     error: 'Resource not found',
     status: 404,
   }
   return c.json(errorResponse, 404)
 })
+
+console.log('hono routes')
+showRoutes(app, { verbose: true })
 
 export default app

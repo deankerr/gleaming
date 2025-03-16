@@ -12,6 +12,7 @@ alwaysApply: true
 **DO NOT ADD FEATURES WE HAVEN'T EXPLICITLY DISCUSSED! THEY ARE WRONG!**
 
 - We use pnpm
+- This is a Cloudflare Worker
 
 ## Core Purpose
 

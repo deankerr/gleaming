@@ -17,3 +17,16 @@ export const DB_TABLE_IMAGES = 'images'
 // Environment names
 export const ENV_DEVELOPMENT = 'development'
 export const ENV_PRODUCTION = 'production'
+
+// Supported image types
+export const ALLOWED_MIME_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/gif',
+  'image/webp',
+  'image/avif',
+  'image/svg+xml',
+]
+
+// Maximum file size (10MB)
+export const MAX_FILE_SIZE = 10 * 1024 * 1024

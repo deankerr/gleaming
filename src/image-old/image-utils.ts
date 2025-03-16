@@ -1,4 +1,4 @@
-import { ALLOWED_MIME_TYPES, MAX_FILE_SIZE, ImageMetadata } from './types'
+import { ALLOWED_MIME_TYPES, MAX_FILE_SIZE, ImageMetadata } from '../types'
 
 /**
  * Validates if a file is an image and meets the size requirements
