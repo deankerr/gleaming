@@ -28,7 +28,7 @@ async function extractImageMetadata(
   }
 }
 
-function createImageEntity({
+function createImage({
   mimeType,
   fileSize,
   workspaceId,
@@ -86,7 +86,7 @@ imageRouter.post('/upload', async (c) => {
     return c.json({ error: 'Invalid image file' }, 400)
   }
 
-  const imageEntity = createImageEntity({
+  const image = createImage({
     mimeType: metadata.format,
     fileSize: file.size,
     workspaceId,
@@ -96,10 +96,10 @@ imageRouter.post('/upload', async (c) => {
   })
 
   const imageRepo = createImageRepository(c.env)
-  await imageRepo.store(imageEntity, file)
+  await imageRepo.store(image, file)
 
   return c.json({
-    storageKey: imageEntity.storageKey,
+    storageKey: image.storageKey,
   })
 })
 
