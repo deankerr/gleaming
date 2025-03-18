@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "7fc7d7a8-22cb-487e-bb29-0bc02afd2ebc",
+  "id": "5f9b21fa-b715-4d35-9ca5-fadeae3ca99d",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "files": {
@@ -43,15 +43,8 @@
           "autoincrement": false,
           "default": "CURRENT_TIMESTAMP"
         },
-        "system_metadata": {
-          "name": "system_metadata",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "user_metadata": {
-          "name": "user_metadata",
+        "metadata": {
+          "name": "metadata",
           "type": "text",
           "primaryKey": false,
           "notNull": false,

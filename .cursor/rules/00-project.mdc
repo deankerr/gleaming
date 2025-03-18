@@ -13,6 +13,7 @@ alwaysApply: true
 
 - We use pnpm
 - This is a Cloudflare Worker
+- Define/export types and zod schemas in the SAME file that they are mainly used it
 
 ## Core Purpose
 

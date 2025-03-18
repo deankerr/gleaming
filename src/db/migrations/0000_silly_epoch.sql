@@ -4,8 +4,7 @@ CREATE TABLE `files` (
 	`content_type` text NOT NULL,
 	`size` integer NOT NULL,
 	`created_at` text DEFAULT CURRENT_TIMESTAMP NOT NULL,
-	`system_metadata` text,
-	`user_metadata` text,
+	`metadata` text,
 	`public_id` text,
 	`user_id` text NOT NULL,
 	`workspace_id` text NOT NULL

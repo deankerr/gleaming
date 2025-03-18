@@ -4,22 +4,15 @@ import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
 // Core files table
 export const files = sqliteTable('files', {
   id: text('id').primaryKey(), // Internal ID
-  contentHash: text('content_hash').notNull(), // BLAKE-3
+  contentHash: text('content_hash').notNull(), // BLAKE-3, R2 key
   contentType: text('content_type').notNull(),
   size: integer('size').notNull(),
   createdAt: text('created_at')
     .default(sql`CURRENT_TIMESTAMP`)
     .notNull(),
+  metadata: text('metadata', { mode: 'json' }), // file metadata
 
-  // System-managed metadata specific to file type
-  // e.g. for images: { width: 800, height: 600, format: 'jpeg' }
-  systemMetadata: text('system_metadata', { mode: 'json' }),
-
-  // User-supplied metadata (tags, descriptions, etc)
-  userMetadata: text('user_metadata', { mode: 'json' }),
-
-  // Access control
-  publicId: text('public_id'),
+  slug: text('slug').notNull(), // public slug
 
   userId: text('user_id').notNull(),
   workspaceId: text('workspace_id').notNull(),

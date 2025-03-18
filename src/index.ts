@@ -5,7 +5,7 @@ import { logger } from 'hono/logger'
 import { prettyJSON } from 'hono/pretty-json'
 import { secureHeaders } from 'hono/secure-headers'
 import serveEmojiFavicon from './middleware/serve-emoji-favicon'
-import { demoApp } from './zod-openapi-demo'
+import { filesRouter } from './routes/files'
 import { DBService } from './services/db.service'
 import type { AppEnv } from './types'
 
@@ -27,8 +27,9 @@ app.use('*', secureHeaders())
 app.use('*', prettyJSON())
 app.use('*', serveEmojiFavicon('🤩'))
 
-// Mount the demo app
-app.route('/api', demoApp)
+// Mount the routers
+// app.route('/api', demoApp)
+app.route('/api', filesRouter)
 
 // Global error handler
 app.onError((err, c) => {

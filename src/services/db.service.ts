@@ -23,11 +23,20 @@ export class DBService {
   }
 
   /**
-   * Get a file by public ID
+   * Get a file by slug
    */
-  async getFileByPublicId(publicId: string) {
+  async getFileBySlug(slug: string) {
     return this.db.query.files.findFirst({
-      where: eq(files.publicId, publicId),
+      where: eq(files.slug, slug),
+    })
+  }
+
+  /**
+   * Get a file by content hash
+   */
+  async getFileByContentHash(hash: string) {
+    return this.db.query.files.findFirst({
+      where: eq(files.contentHash, hash),
     })
   }
 
@@ -38,9 +47,8 @@ export class DBService {
     contentHash: string
     contentType: string
     size: number
-    systemMetadata?: Record<string, any>
-    userMetadata?: Record<string, any>
-    publicId?: string
+    metadata?: Record<string, any>
+    slug: string
     userId: string
     workspaceId: string
   }) {
@@ -51,13 +59,13 @@ export class DBService {
       contentHash: data.contentHash,
       contentType: data.contentType,
       size: data.size,
-      systemMetadata: data.systemMetadata,
-      userMetadata: data.userMetadata,
-      publicId: data.publicId,
+      metadata: data.metadata,
+      slug: data.slug,
       userId: data.userId,
       workspaceId: data.workspaceId,
     })
 
+    console.log('db:files:insert:', id)
     return this.getFileById(id)
   }
 
