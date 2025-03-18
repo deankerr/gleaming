@@ -1,4 +1,4 @@
-import { createRouter } from '../routers'
+import { createRouter } from '../../src/routers'
 import { createImageRepository, type Image } from './image.repository'
 
 const DEFAULT_USER_ID = 'default-user'

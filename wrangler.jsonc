@@ -26,7 +26,8 @@
     {
       "binding": "DB",
       "database_name": "gleaming-db",
-      "database_id": "a64c2748-9729-407b-9d79-3c71c2fa21de"
+      "database_id": "a64c2748-9729-407b-9d79-3c71c2fa21de",
+      "migrations_dir": "src/db/migrations"
     }
   ],
 
