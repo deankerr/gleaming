@@ -1,5 +1,4 @@
 import type { GetImageByHashRoute } from '../../routes/files'
-import { StorageService } from '../../services/storage.service'
 import type { AppRouteHandler } from '../../types'
 import { AppError, notFound } from '../../utils/errors'
 
@@ -9,7 +8,7 @@ import { AppError, notFound } from '../../utils/errors'
 export const getImageByHash: AppRouteHandler<GetImageByHashRoute> = async (c) => {
   const { hash } = c.req.valid('param')
   const db = c.get('db')
-  const storageService = new StorageService(c.env.BUCKET)
+  const storageService = c.get('storage')
 
   try {
     // Find file records with this hash using the direct method

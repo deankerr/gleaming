@@ -1,5 +1,6 @@
 import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi'
 import { getImageByHash } from '../handlers/files/get'
+import { serveImage, ImageTransformParamsSchema } from '../handlers/files/serve'
 import { uploadImage } from '../handlers/files/upload'
 import type { AppEnv } from '../types'
 
@@ -167,15 +168,58 @@ const getFileRoute = createRoute({
   },
 })
 
+// 3. Serve image by hash
+const serveImageRoute = createRoute({
+  method: 'get',
+  path: '/files/{hash}/view',
+  tags: ['Files'],
+  summary: 'Serve image by hash',
+  description: 'Serve an image by its content hash with optional transformations',
+  request: {
+    params: FileParamsSchema,
+    query: ImageTransformParamsSchema,
+  },
+  responses: {
+    200: {
+      description: 'Image served successfully',
+      content: {
+        'image/*': {
+          schema: z.any().openapi({
+            type: 'string',
+            format: 'binary',
+          }),
+        },
+      },
+    },
+    404: {
+      content: {
+        'application/json': {
+          schema: ErrorSchema,
+        },
+      },
+      description: 'File not found',
+    },
+    500: {
+      content: {
+        'application/json': {
+          schema: ErrorSchema,
+        },
+      },
+      description: 'Internal server error',
+    },
+  },
+})
+
 // Create the router with OpenAPIHono
 const filesRouter = new OpenAPIHono<AppEnv>()
 
 // Register routes
 filesRouter.openapi(uploadImageRoute, uploadImage)
-
 filesRouter.openapi(getFileRoute, getImageByHash)
+filesRouter.openapi(serveImageRoute, serveImage)
 
 export { filesRouter }
 
 export type UploadImageRoute = typeof uploadImageRoute
 export type GetImageByHashRoute = typeof getFileRoute
+export type ServeImageRoute = typeof serveImageRoute

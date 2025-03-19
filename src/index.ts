@@ -7,6 +7,8 @@ import { secureHeaders } from 'hono/secure-headers'
 import serveEmojiFavicon from './middleware/serve-emoji-favicon'
 import { filesRouter } from './routes/files'
 import { DBService } from './services/db.service'
+import { ImageService } from './services/image.service'
+import { StorageService } from './services/storage.service'
 import type { AppEnv } from './types'
 
 const app = new OpenAPIHono<AppEnv>({
@@ -15,9 +17,16 @@ const app = new OpenAPIHono<AppEnv>({
 
 // Middleware to initialize and attach services
 app.use('*', async (c, next) => {
-  // Initialize database service
+  // Initialize services
   const dbService = new DBService(c.env.DB)
+  const storageService = new StorageService(c.env.BUCKET)
+  const imageService = new ImageService(c.env.IMAGES)
+
+  // Attach services to context
   c.set('db', dbService)
+  c.set('storage', storageService)
+  c.set('image', imageService)
+
   await next()
 })
 

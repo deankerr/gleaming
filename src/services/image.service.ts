@@ -1,4 +1,4 @@
-import { badRequest, unsupportedMediaType } from '../utils/errors'
+import { badRequest, internalError, unsupportedMediaType } from '../utils/errors'
 import { MAX_FILE_SIZE } from '../constants'
 
 /**
@@ -93,5 +93,71 @@ export class ImageService {
     // In the future, we can add transformations here
     // For now, just return the original image
     return imageData
+  }
+
+  /**
+   * Transform an image with the given options
+   * @param imageData - The image data to transform
+   * @param options - Transform options like width, height, and format
+   * @returns The transformed image data
+   */
+  async transform(
+    imageData: ReadableStream<Uint8Array>,
+    options: {
+      width?: number
+      height?: number
+      fit?: 'scale-down' | 'contain' | 'cover' | 'crop' | 'pad'
+      quality?: number
+      format?: string
+    },
+  ): Promise<ReadableStream<Uint8Array>> {
+    try {
+      // Use Cloudflare Images API to transform the image
+      const transformer = this.images.input(imageData)
+
+      // Apply transformations
+      const transformOptions: ImageTransform = {
+        width: options.width,
+        height: options.height,
+        fit: options.fit,
+      }
+
+      const transformed = transformer.transform(transformOptions)
+
+      // Set output format and quality
+      const outputOptions: ImageOutputOptions = {
+        format: getOutputFormat(options.format),
+        quality: options.quality,
+      }
+
+      // Get the transformed image
+      const result = await transformed.output(outputOptions)
+      return result.image()
+    } catch (error) {
+      console.error('Image transformation failed:', error)
+      throw internalError('Failed to transform image')
+    }
+  }
+}
+
+/**
+ * Convert format string to ImagesBinding format type
+ */
+function getOutputFormat(
+  format?: string,
+): 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp' | 'image/avif' {
+  if (!format) return 'image/webp' // Default
+
+  switch (format) {
+    case 'webp':
+      return 'image/webp'
+    case 'jpeg':
+      return 'image/jpeg'
+    case 'png':
+      return 'image/png'
+    case 'avif':
+      return 'image/avif'
+    default:
+      return 'image/webp'
   }
 }

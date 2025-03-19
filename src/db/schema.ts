@@ -12,10 +12,12 @@ export const files = sqliteTable('files', {
     .notNull(),
   metadata: text('metadata', { mode: 'json' }), // file metadata
 
-  slug: text('slug').notNull(), // public slug
-
+  // owner
   userId: text('user_id').notNull(),
   workspaceId: text('workspace_id').notNull(),
+
+  // public url slug
+  slug: text('slug').notNull(),
 })
 
 // Workspaces table

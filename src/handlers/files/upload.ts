@@ -1,8 +1,6 @@
 import { ulid } from 'ulidx'
 import { DEFAULT_USER_ID, DEFAULT_WORKSPACE_ID } from '../../constants'
 import type { UploadImageRoute } from '../../routes/files'
-import { ImageService } from '../../services/image.service'
-import { StorageService } from '../../services/storage.service'
 import type { AppRouteHandler } from '../../types'
 import { AppError, badRequest } from '../../utils/errors'
 import { cloneStream, generateHashFromStream } from '../../utils/hash'
@@ -12,13 +10,13 @@ import { cloneStream, generateHashFromStream } from '../../utils/hash'
  */
 export const uploadImage: AppRouteHandler<UploadImageRoute> = async (c) => {
   const { url, file, slug } = c.req.valid('form')
-  // TODO: Get user and workspace from context
+
   const userId = DEFAULT_USER_ID
   const workspaceId = DEFAULT_WORKSPACE_ID
 
-  // Create services
-  const storageService = new StorageService(c.env.BUCKET)
-  const imageService = new ImageService(c.env.IMAGES)
+  // Get services from context
+  const storageService = c.get('storage')
+  const imageService = c.get('image')
   const db = c.get('db')
 
   try {
