@@ -67,10 +67,10 @@ export interface ImageTransformParams {
 }
 
 /**
- * Handler for serving an image by its content hash
+ * Handler for serving an image by its slug
  */
 export const serveImage: AppRouteHandler<ServeImageRoute> = async (c) => {
-  const { hash } = c.req.valid('param')
+  const { slug } = c.req.valid('param')
 
   // Get query parameters directly without using valid() since we're handling
   // them with our own logic for simplicity
@@ -87,8 +87,8 @@ export const serveImage: AppRouteHandler<ServeImageRoute> = async (c) => {
   const storageService = c.get('storage')
 
   try {
-    // Find file record with this hash
-    const file = await db.getFileByContentHash(hash)
+    // Find file record with this slug
+    const file = await db.getFileBySlug(slug)
 
     if (!file) {
       throw notFound('File')

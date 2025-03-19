@@ -5,6 +5,7 @@ import { logger } from 'hono/logger'
 import { prettyJSON } from 'hono/pretty-json'
 import { secureHeaders } from 'hono/secure-headers'
 import serveEmojiFavicon from './middleware/serve-emoji-favicon'
+import { devRouter } from './routes/dev'
 import { filesRouter } from './routes/files'
 import { DBService } from './services/db.service'
 import { ImageService } from './services/image.service'
@@ -39,6 +40,7 @@ app.use('*', serveEmojiFavicon('🤩'))
 // Mount the routers
 // app.route('/api', demoApp)
 app.route('/api', filesRouter)
+app.route('/dev', devRouter)
 
 // Global error handler
 app.onError((err, c) => {

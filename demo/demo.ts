@@ -5,11 +5,13 @@ import { parseArgs } from 'node:util'
 
 // Configuration constants
 const API_BASE_URL = 'http://localhost:8787/api'
-const DEFAULT_USERNAME = 'test-user'
+const PATH_UPLOAD = '/upload'
+const PATH_INFO = '/info'
+const PATH_SERVE = '/file'
 
 // Command line arguments parsing
 const { values, positionals } = parseArgs({
-  args: Bun.argv.slice(2),
+  args: process.argv.slice(2),
   options: {
     url: {
       type: 'string',
@@ -72,7 +74,7 @@ async function uploadFile(filename?: string) {
     process.exit(1)
   }
 
-  const filepath = join(__dirname, filename)
+  const filepath = join(import.meta.dirname, filename)
 
   try {
     // Read the file
@@ -87,13 +89,14 @@ async function uploadFile(filename?: string) {
     formData.append('file', file)
 
     // Optional: Add a slug based on the filename without extension
-    const slug = basename(filename).split('.')[0]
-    // formData.append('slug', slug)
+    const slug = basename(filename)
+    formData.append('slug', slug)
 
     console.log(`Uploading ${filename} (${formatBytes(fileBuffer.byteLength)})...`)
-    console.log(formData)
+    console.log(`Using custom slug: ${slug}`)
+
     // Make the API request
-    const response = await fetch(`${values.url}/files`, {
+    const response = await fetch(`${values.url}${PATH_UPLOAD}`, {
       method: 'POST',
       body: formData,
       verbose: true,
@@ -112,6 +115,14 @@ async function uploadFile(filename?: string) {
       console.log(`- Content Type: ${data.contentType}`)
       console.log(`- Slug: ${data.slug}`)
 
+      // Show slug pattern breakdown if it contains a hyphen
+      if (data.slug && data.slug.includes('-')) {
+        const [timeId, userSlug] = data.slug.split('-', 2)
+        console.log(`  └─ Format: <time-id>-<slug>`)
+        console.log(`     ├─ Time ID: ${timeId} (sortable by creation time)`)
+        console.log(`     └─ User Slug: ${userSlug || '(none)'}`)
+      }
+
       if (data.metadata) {
         console.log('Metadata:')
         if (data.metadata.width && data.metadata.height) {
@@ -122,7 +133,8 @@ async function uploadFile(filename?: string) {
         }
       }
 
-      console.log(`\nTo retrieve this file: bun run demo.ts get ${data.contentHash}`)
+      console.log(`\nTo retrieve this file: bun run demo.ts get ${data.slug}`)
+      console.log(`\nOr visit ${API_BASE_URL}${PATH_SERVE}/${data.slug}`)
     } else {
       console.error('❌ Upload failed!')
       console.error(`Status: ${response.status} ${response.statusText}`)
@@ -149,7 +161,7 @@ async function getFile(hash?: string) {
 
   try {
     // Make the API request
-    const response = await fetch(`${values.url}/files/${hash}`)
+    const response = await fetch(`${values.url}${PATH_INFO}/${hash}`)
 
     // Parse response
     const data = (await response.json()) as any

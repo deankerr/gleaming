@@ -5,11 +5,12 @@ CREATE TABLE `files` (
 	`size` integer NOT NULL,
 	`created_at` text DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	`metadata` text,
-	`public_id` text,
 	`user_id` text NOT NULL,
-	`workspace_id` text NOT NULL
+	`workspace_id` text NOT NULL,
+	`slug` text NOT NULL
 );
 --> statement-breakpoint
+CREATE INDEX `slug_idx` ON `files` (`slug`);--> statement-breakpoint
 CREATE TABLE `users` (
 	`id` text PRIMARY KEY NOT NULL,
 	`name` text NOT NULL,

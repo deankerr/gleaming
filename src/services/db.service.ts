@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm'
+import { desc, eq } from 'drizzle-orm'
 import { ulid } from 'ulidx'
 import { DB, initDB } from '../db'
 import { files, users, workspaces } from '../db/schema'
@@ -67,6 +67,16 @@ export class DBService {
 
     console.log('db:files:insert:', id)
     return this.getFileById(id)
+  }
+
+  /**
+   * List files ordered by creation time (descending)
+   */
+  async listFiles(limit: number = 50) {
+    return this.db.query.files.findMany({
+      orderBy: [desc(files.createdAt)],
+      limit,
+    })
   }
 
   /**

@@ -1,18 +1,17 @@
-import type { GetImageByHashRoute } from '../../routes/files'
+import type { GetImageBySlugRoute } from '../../routes/files'
 import type { AppRouteHandler } from '../../types'
 import { AppError, notFound } from '../../utils/errors'
 
 /**
- * Handler for getting an image by its content hash
+ * Handler for getting an image by its slug
  */
-export const getImageByHash: AppRouteHandler<GetImageByHashRoute> = async (c) => {
-  const { hash } = c.req.valid('param')
+export const getImageInfoBySlug: AppRouteHandler<GetImageBySlugRoute> = async (c) => {
+  const { slug } = c.req.valid('param')
   const db = c.get('db')
-  const storageService = c.get('storage')
 
   try {
-    // Find file records with this hash using the direct method
-    const file = await db.getFileByContentHash(hash)
+    // Find file record with this slug
+    const file = await db.getFileBySlug(slug)
 
     if (!file) {
       throw notFound('File')

@@ -1,4 +1,4 @@
-import { badRequest, internalError } from '../utils/errors'
+import { internalError } from '../utils/errors'
 
 /**
  * Storage service for managing files in R2

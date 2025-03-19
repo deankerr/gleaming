@@ -1,5 +1,5 @@
 import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi'
-import { getImageByHash } from '../handlers/files/get'
+import { getImageInfoBySlug } from '../handlers/files/info'
 import { serveImage, ImageTransformParamsSchema } from '../handlers/files/serve'
 import { uploadImage } from '../handlers/files/upload'
 import type { AppEnv } from '../types'
@@ -17,12 +17,12 @@ const ErrorSchema = z
   .openapi('Error')
 
 const FileParamsSchema = z.object({
-  hash: z.string().openapi({
+  slug: z.string().openapi({
     param: {
-      name: 'hash',
+      name: 'slug',
       in: 'path',
     },
-    example: 'abc123def456',
+    example: 'ltspei2xq-my-image',
   }),
 })
 
@@ -32,7 +32,7 @@ const ImageSchema = z
       example: '01HPDQ5GXCVBNMTP7VJVDBK3NR',
     }),
     slug: z.string().openapi({
-      example: 'my-image-01HPDQ5GXCVBNMTP7VJVDBK3NR',
+      example: 'ltspei2xq-my-image',
     }),
     contentHash: z.string().openapi({
       example: 'abc123def456',
@@ -67,6 +67,7 @@ const UploadImageSchema = z
     }),
     file: z.instanceof(Blob).optional(),
     slug: z.string().optional().openapi({
+      description: 'Optional user-defined slug (will be combined with a time-sortable ID)',
       example: 'my-image',
     }),
   })
@@ -77,7 +78,7 @@ const UploadImageSchema = z
 // 1. Upload a new image
 const uploadImageRoute = createRoute({
   method: 'post',
-  path: '/files',
+  path: '/upload',
   tags: ['Files'],
   summary: 'Upload a new image',
   description: 'Upload a new image via URL or direct file upload',
@@ -130,13 +131,13 @@ const uploadImageRoute = createRoute({
   },
 })
 
-// 2. Get file by hash
-const getFileRoute = createRoute({
+// 2. Get file info by slug
+const getFileInfo = createRoute({
   method: 'get',
-  path: '/files/{hash}',
+  path: '/info/{slug}',
   tags: ['Files'],
-  summary: 'Get file by hash',
-  description: 'Retrieve a file by its content hash',
+  summary: 'Get file info by slug',
+  description: 'Retrieve file information by its unique slug',
   request: {
     params: FileParamsSchema,
   },
@@ -168,13 +169,13 @@ const getFileRoute = createRoute({
   },
 })
 
-// 3. Serve image by hash
+// 3. Serve image by slug
 const serveImageRoute = createRoute({
   method: 'get',
-  path: '/files/{hash}/view',
+  path: '/file/{slug}',
   tags: ['Files'],
-  summary: 'Serve image by hash',
-  description: 'Serve an image by its content hash with optional transformations',
+  summary: 'Serve image by slug',
+  description: 'Serve an image by its unique slug with optional transformations',
   request: {
     params: FileParamsSchema,
     query: ImageTransformParamsSchema,
@@ -215,11 +216,11 @@ const filesRouter = new OpenAPIHono<AppEnv>()
 
 // Register routes
 filesRouter.openapi(uploadImageRoute, uploadImage)
-filesRouter.openapi(getFileRoute, getImageByHash)
+filesRouter.openapi(getFileInfo, getImageInfoBySlug)
 filesRouter.openapi(serveImageRoute, serveImage)
 
 export { filesRouter }
 
 export type UploadImageRoute = typeof uploadImageRoute
-export type GetImageByHashRoute = typeof getFileRoute
+export type GetImageBySlugRoute = typeof getFileInfo
 export type ServeImageRoute = typeof serveImageRoute

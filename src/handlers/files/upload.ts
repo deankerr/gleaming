@@ -1,9 +1,9 @@
-import { ulid } from 'ulidx'
 import { DEFAULT_USER_ID, DEFAULT_WORKSPACE_ID } from '../../constants'
 import type { UploadImageRoute } from '../../routes/files'
 import type { AppRouteHandler } from '../../types'
 import { AppError, badRequest } from '../../utils/errors'
 import { cloneStream, generateHashFromStream } from '../../utils/hash'
+import { generateCompactTimeId } from '../../utils/id'
 
 /**
  * Handler for uploading an image
@@ -63,9 +63,9 @@ export const uploadImage: AppRouteHandler<UploadImageRoute> = async (c) => {
       await storageService.storeFile(contentHash, storeStream, contentType)
     }
 
-    // Generate a unique ID and slug for the file record
-    const id = ulid()
-    const fileSlug = slug ? `${slug}-${id}` : id
+    // Create slug - use time ID as base, add user-provided slug only if provided
+    const timeId = generateCompactTimeId()
+    const fileSlug = slug ? `${timeId}-${slug}` : timeId
 
     // Create database record
     const fileRecord = await db.createFile({
