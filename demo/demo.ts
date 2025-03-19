@@ -6,6 +6,7 @@ import { parseArgs } from 'node:util'
 // Configuration constants
 const API_BASE_URL = 'http://localhost:8787/api'
 const PATH_UPLOAD = '/upload'
+const PATH_INGEST = '/ingest'
 const PATH_INFO = '/info'
 const PATH_SERVE = '/file'
 
@@ -18,6 +19,10 @@ const { values, positionals } = parseArgs({
       short: 'u',
       default: API_BASE_URL,
     },
+    slug: {
+      type: 'string',
+      short: 's',
+    },
   },
   allowPositionals: true,
 })
@@ -25,6 +30,7 @@ const { values, positionals } = parseArgs({
 // Command handlers
 const commands = {
   upload: uploadFile,
+  ingest: ingestImageUrl,
   get: getFile,
   help: showHelp,
 }
@@ -53,17 +59,44 @@ Usage: bun run demo.ts <command> [options]
 
 Commands:
   upload <filename>            Upload a file from the demo directory
+  ingest <url>                 Ingest an image from a URL (experimental)
   get <hash>                   Get a file by its content hash
   help                         Show this help message
 
 Options:
   -u, --url <url>              API base URL (default: ${API_BASE_URL})
+  -s, --slug <slug>            Custom slug to use for the file
 
 Examples:
   bun run demo.ts upload demo_1.png
+  bun run demo.ts ingest https://example.com/image.jpg --slug my-example
   bun run demo.ts get abc123def456
   bun run demo.ts upload demo_1.png --url https://your-api.example.com/api
 `)
+}
+
+// Helper function to display file details
+function displayFileDetails(data: any) {
+  console.log('Details:')
+  console.log(`- ID: ${data.id}`)
+  console.log(`- Content Hash: ${data.contentHash}`)
+  console.log(`- Size: ${formatBytes(data.size)}`)
+  console.log(`- Content Type: ${data.contentType}`)
+  console.log(`- Slug: ${data.slug}`)
+  console.log(`- Created At: ${new Date(data.createdAt).toLocaleString()}`)
+
+  if (data.metadata) {
+    console.log('Metadata:')
+    if (data.metadata.width && data.metadata.height) {
+      console.log(`- Dimensions: ${data.metadata.width}×${data.metadata.height}`)
+    }
+    if (data.metadata.format) {
+      console.log(`- Format: ${data.metadata.format}`)
+    }
+  }
+
+  console.log(`\nTo retrieve this file: bun run demo.ts get ${data.slug}`)
+  console.log(`\nOr visit ${API_BASE_URL}${PATH_SERVE}/${data.slug}`)
 }
 
 // Upload a file
@@ -89,7 +122,7 @@ async function uploadFile(filename?: string) {
     formData.append('file', file)
 
     // Optional: Add a slug based on the filename without extension
-    const slug = basename(filename)
+    const slug = values.slug || basename(filename)
     formData.append('slug', slug)
 
     console.log(`Uploading ${filename} (${formatBytes(fileBuffer.byteLength)})...`)
@@ -108,33 +141,7 @@ async function uploadFile(filename?: string) {
     // Display results
     if (response.ok) {
       console.log('✅ File uploaded successfully!')
-      console.log('Details:')
-      console.log(`- ID: ${data.id}`)
-      console.log(`- Content Hash: ${data.contentHash}`)
-      console.log(`- Size: ${formatBytes(data.size)}`)
-      console.log(`- Content Type: ${data.contentType}`)
-      console.log(`- Slug: ${data.slug}`)
-
-      // Show slug pattern breakdown if it contains a hyphen
-      if (data.slug && data.slug.includes('-')) {
-        const [timeId, userSlug] = data.slug.split('-', 2)
-        console.log(`  └─ Format: <time-id>-<slug>`)
-        console.log(`     ├─ Time ID: ${timeId} (sortable by creation time)`)
-        console.log(`     └─ User Slug: ${userSlug || '(none)'}`)
-      }
-
-      if (data.metadata) {
-        console.log('Metadata:')
-        if (data.metadata.width && data.metadata.height) {
-          console.log(`- Dimensions: ${data.metadata.width}×${data.metadata.height}`)
-        }
-        if (data.metadata.format) {
-          console.log(`- Format: ${data.metadata.format}`)
-        }
-      }
-
-      console.log(`\nTo retrieve this file: bun run demo.ts get ${data.slug}`)
-      console.log(`\nOr visit ${API_BASE_URL}${PATH_SERVE}/${data.slug}`)
+      displayFileDetails(data)
     } else {
       console.error('❌ Upload failed!')
       console.error(`Status: ${response.status} ${response.statusText}`)
@@ -146,6 +153,54 @@ async function uploadFile(filename?: string) {
     } else {
       throw error
     }
+  }
+}
+
+// Ingest an image from a URL
+async function ingestImageUrl(url?: string) {
+  if (!url) {
+    console.error('Error: Missing URL')
+    showHelp()
+    process.exit(1)
+  }
+
+  try {
+    console.log(`Ingesting image from URL: ${url}...`)
+
+    if (values.slug) {
+      console.log(`Using custom slug: ${values.slug}`)
+    }
+
+    // Create request payload
+    const payload = {
+      url,
+      slug: values.slug,
+    }
+
+    // Make the API request
+    const response = await fetch(`${values.url}${PATH_INGEST}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    })
+
+    // Parse response
+    const data = (await response.json()) as any
+
+    // Display results
+    if (response.ok) {
+      console.log('✅ Image ingested successfully!')
+      displayFileDetails(data)
+    } else {
+      console.error('❌ Ingestion failed!')
+      console.error(`Status: ${response.status} ${response.statusText}`)
+      console.error('Response:', data)
+    }
+  } catch (error) {
+    console.error('Error ingesting image from URL:', error)
+    throw error
   }
 }
 
@@ -169,23 +224,7 @@ async function getFile(hash?: string) {
     // Display results
     if (response.ok) {
       console.log('✅ File retrieved successfully!')
-      console.log('Details:')
-      console.log(`- ID: ${data.id}`)
-      console.log(`- Content Hash: ${data.contentHash}`)
-      console.log(`- Size: ${formatBytes(data.size)}`)
-      console.log(`- Content Type: ${data.contentType}`)
-      console.log(`- Slug: ${data.slug}`)
-      console.log(`- Created At: ${new Date(data.createdAt).toLocaleString()}`)
-
-      if (data.metadata) {
-        console.log('Metadata:')
-        if (data.metadata.width && data.metadata.height) {
-          console.log(`- Dimensions: ${data.metadata.width}×${data.metadata.height}`)
-        }
-        if (data.metadata.format) {
-          console.log(`- Format: ${data.metadata.format}`)
-        }
-      }
+      displayFileDetails(data)
     } else {
       console.error('❌ Retrieval failed!')
       console.error(`Status: ${response.status} ${response.statusText}`)

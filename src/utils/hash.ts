@@ -54,6 +54,32 @@ export async function generateHashFromStream(stream: ReadableStream<Uint8Array>)
 }
 
 /**
+ * Count the total size of a stream in bytes
+ * @param stream - The stream to count
+ * @returns The total size in bytes
+ */
+export async function countStreamSize(stream: ReadableStream<Uint8Array>): Promise<number> {
+  const reader = stream.getReader()
+  let totalSize = 0
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read()
+
+      if (done) {
+        break
+      }
+
+      totalSize += value.length
+    }
+
+    return totalSize
+  } finally {
+    reader.releaseLock()
+  }
+}
+
+/**
  * Clone a ReadableStream so it can be consumed multiple times
  * @param stream - The stream to clone
  * @returns Two new readable streams with the same content

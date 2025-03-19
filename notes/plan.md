@@ -101,3 +101,56 @@ src/
 - Hono Framework
 - TypeScript
 - Cloudflare Images for validation/optimization
+
+## Example Final Project Structure
+
+Only create modules when they are needed!
+
+```
+/src
+├── index.ts                 # Main entry point - binds everything together
+├── routes/                  # API endpoints grouped by domain
+│   ├── files.ts             # File-related routes (/files/*)
+│   ├── users.ts             # User path routes (/users/*)
+│   ├── workspaces.ts        # Workspace management
+│   └── admin.ts             # Admin-only routes
+├── handlers/                # Core business logic implementing route handlers
+│   ├── files/
+│   │   ├── index.ts         # Re-exports from this directory
+│   │   ├── upload.ts        # File upload logic
+│   │   ├── serve.ts         # File serving logic
+│   │   └── manage.ts        # File management (rename, delete, etc.)
+│   └── workspaces/
+│       └── ...
+├── content-types/           # Content handler registry & implementations
+│   ├── index.ts             # Registry and interface definitions
+│   ├── image.ts             # Image handler (jpg, png, etc.)
+│   ├── svg.ts               # SVG-specific handler
+│   ├── markdown.ts          # Markdown handler with HTML rendering
+│   └── default.ts           # Default handler for unsupported types
+├── renderers/               # Output rendering implementations
+│   ├── index.ts             # Registry of renderers
+│   ├── raw.ts               # Raw content delivery
+│   ├── html.ts              # HTML wrapper for content types that support it
+│   └── transform.ts         # Image transformations (resize, etc.)
+├── storage/                 # Storage layer abstraction
+│   ├── index.ts             # Storage interface
+│   ├── r2.ts                # R2 implementation
+│   └── content-addressed.ts # Content addressing helpers
+├── database/                # Database operations
+│   ├── schema.ts            # Schema definitions
+│   ├── migrations/          # Database migrations
+│   └── repositories/        # Data access repositories
+│       ├── files.ts         # File data operations
+│       ├── workspaces.ts    # Workspace data operations
+│       └── users.ts         # User data operations
+├── utils/                   # Shared utilities
+│   ├── id.ts                # ID generation (ULIDs, etc.)
+│   ├── hash.ts              # Content hashing utilities
+│   └── errors.ts            # Error definitions
+└── types/                   # Type definitions
+    ├── index.ts             # Re-exports all types
+    ├── file.ts              # File-related types
+    ├── metadata.ts          # Metadata types for different content types
+    └── env.ts               # Environment bindings type definitions
+```

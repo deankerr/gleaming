@@ -1,23 +1,12 @@
-import { badRequest, internalError, unsupportedMediaType } from '../utils/errors'
-import { MAX_FILE_SIZE } from '../constants'
-
-/**
- * Valid image MIME types
- */
-export const VALID_IMAGE_TYPES = [
-  'image/jpeg',
-  'image/png',
-  'image/gif',
-  'image/webp',
-  'image/svg+xml',
-  'image/avif',
-]
+import { AppError, badRequest, internalError, unsupportedMediaType } from '../utils/errors'
+import { MAX_FILE_SIZE, VALID_IMAGE_TYPES } from '../constants'
+import { cloneStream, countStreamSize } from '../utils/hash'
 
 export interface ImageMetadata {
   width?: number
   height?: number
   format?: string
-  fileSize?: number
+  fileSize: number
 }
 
 /**
@@ -42,22 +31,26 @@ export class ImageService {
       throw unsupportedMediaType(`Unsupported image type: ${contentType}`)
     }
 
-    try {
-      // Validate using Cloudflare Images
-      const info = await this.images.info(imageData)
+    // Clone the stream so we can use it for both size checking and format validation
+    const [sizeStream, infoStream] = cloneStream(imageData)
 
-      // Extract relevant metadata
-      const metadata: ImageMetadata = {
-        format: info.format,
+    // First, check the file size
+    try {
+      const fileSize = await countStreamSize(sizeStream)
+
+      // Check against maximum allowed size
+      if (fileSize > MAX_FILE_SIZE) {
+        throw badRequest(`Image size exceeds maximum allowed size of ${MAX_FILE_SIZE} bytes`)
       }
 
-      // Add size info if available
-      if ('fileSize' in info) {
-        metadata.fileSize = info.fileSize
+      // Now validate image format using Cloudflare Images
+      try {
+        const info = await this.images.info(infoStream)
 
-        // Check size limit
-        if (info.fileSize > MAX_FILE_SIZE) {
-          throw badRequest(`Image size exceeds maximum allowed size of ${MAX_FILE_SIZE} bytes`)
+        // Extract relevant metadata
+        const metadata: ImageMetadata = {
+          format: info.format,
+          fileSize: fileSize, // Use our actual measured size
         }
 
         // Add dimensions if available
@@ -65,20 +58,31 @@ export class ImageService {
           metadata.width = info.width
           metadata.height = info.height
         }
-      }
 
-      return metadata
+        return metadata
+      } catch (error) {
+        // Handle format validation errors
+        if (error instanceof Error) {
+          // Pass through AppError instances
+          if (error instanceof AppError) {
+            throw error
+          }
+
+          // Cloudflare Images might throw validation errors
+          throw badRequest(`Invalid image format: ${error.message}`)
+        }
+        throw badRequest('Invalid image format')
+      }
     } catch (error) {
+      // Handle size checking errors or pass through other validation errors
       if (error instanceof Error) {
-        // If it's already an AppError, rethrow
-        if ('status' in error) {
+        // Pass through AppError instances
+        if (error instanceof AppError) {
           throw error
         }
-
-        // Cloudflare Images might throw validation errors
         throw badRequest(`Image validation failed: ${error.message}`)
       }
-      throw badRequest('Invalid image format')
+      throw badRequest('Invalid image data')
     }
   }
 

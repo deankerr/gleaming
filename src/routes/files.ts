@@ -1,5 +1,6 @@
 import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi'
 import { getImageInfoBySlug } from '../handlers/files/info'
+import { ingestImage } from '../handlers/files/ingest'
 import { serveImage, ImageTransformParamsSchema } from '../handlers/files/serve'
 import { uploadImage } from '../handlers/files/upload'
 import type { AppEnv } from '../types'
@@ -59,20 +60,30 @@ const ImageSchema = z
   })
   .openapi('Image')
 
-// Upload schema allowing either URL or direct file upload
+// Direct file upload schema
 const UploadImageSchema = z
   .object({
-    url: z.string().url().optional().openapi({
-      example: 'https://example.com/source-image.jpg',
-    }),
-    file: z.instanceof(Blob).optional(),
+    file: z.instanceof(Blob),
     slug: z.string().optional().openapi({
       description: 'Optional user-defined slug (will be combined with a time-sortable ID)',
       example: 'my-image',
     }),
   })
-
   .openapi('UploadImage')
+
+// Ingest via URL schema
+const IngestImageSchema = z
+  .object({
+    url: z.string().url().openapi({
+      example: 'https://example.com/source-image.jpg',
+      description: 'URL of the image to ingest',
+    }),
+    slug: z.string().optional().openapi({
+      description: 'Optional user-defined slug (will be combined with a time-sortable ID)',
+      example: 'my-image',
+    }),
+  })
+  .openapi('IngestImage')
 
 // Create routes
 // 1. Upload a new image
@@ -119,6 +130,51 @@ const uploadImageRoute = createRoute({
         },
       },
       description: 'Unsupported media type',
+    },
+    500: {
+      content: {
+        'application/json': {
+          schema: ErrorSchema,
+        },
+      },
+      description: 'Internal server error',
+    },
+  },
+})
+
+// 1b. Ingest a new image from URL (experimental)
+const ingestImageRoute = createRoute({
+  method: 'post',
+  path: '/ingest',
+  tags: ['Files'],
+  summary: 'Ingest a new image from URL',
+  description: ' endpoint to ingest a new image via URL with additional validation',
+  request: {
+    body: {
+      content: {
+        'application/json': {
+          schema: IngestImageSchema,
+        },
+      },
+      required: true,
+    },
+  },
+  responses: {
+    201: {
+      content: {
+        'application/json': {
+          schema: ImageSchema,
+        },
+      },
+      description: 'Image ingested successfully',
+    },
+    400: {
+      content: {
+        'application/json': {
+          schema: ErrorSchema,
+        },
+      },
+      description: 'Invalid URL, non-image content, or file too large',
     },
     500: {
       content: {
@@ -216,11 +272,13 @@ const filesRouter = new OpenAPIHono<AppEnv>()
 
 // Register routes
 filesRouter.openapi(uploadImageRoute, uploadImage)
+filesRouter.openapi(ingestImageRoute, ingestImage)
 filesRouter.openapi(getFileInfo, getImageInfoBySlug)
 filesRouter.openapi(serveImageRoute, serveImage)
 
 export { filesRouter }
 
 export type UploadImageRoute = typeof uploadImageRoute
+export type IngestImageRoute = typeof ingestImageRoute
 export type GetImageBySlugRoute = typeof getFileInfo
 export type ServeImageRoute = typeof serveImageRoute

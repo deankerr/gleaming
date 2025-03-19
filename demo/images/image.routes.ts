@@ -1,6 +1,8 @@
 import { createRouter } from '../../src/routers'
 import { createImageRepository, type Image } from './image.repository'
 
+// ! EXAMPLE CODE ONLY. THIS IS NOT PART OF THE PROJECT.
+
 const DEFAULT_USER_ID = 'default-user'
 const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
 
