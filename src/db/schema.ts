@@ -6,7 +6,7 @@ export const files = sqliteTable(
   'files',
   {
     id: text('id').primaryKey(), // Internal ID
-    contentHash: text('content_hash').notNull(), // BLAKE-3, R2 key
+    contentHash: text('content_hash').notNull(), // md5
     contentType: text('content_type').notNull(),
     size: integer('size').notNull(),
     createdAt: text('created_at')

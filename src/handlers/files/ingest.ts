@@ -1,23 +1,19 @@
-import { DEFAULT_USER_ID, DEFAULT_WORKSPACE_ID, MAX_FILE_SIZE } from '../../constants'
+import { bytesToHex } from '@noble/hashes/utils'
+import { ulid } from 'ulidx'
+import { DEFAULT_USER_ID, DEFAULT_WORKSPACE_ID } from '../../constants'
 import type { IngestImageRoute } from '../../routes/files'
 import type { AppRouteHandler } from '../../types'
-import { AppError, badRequest } from '../../utils/errors'
-import { cloneStream, generateHashFromStream } from '../../utils/hash'
-import { generateCompactTimeId } from '../../utils/id'
+import { AppError, badRequest, internalError } from '../../utils/errors'
+import { generateFileSlug } from '../../utils/id'
 
 // Blocklist of potentially dangerous domains (example)
-const BLOCKLISTED_DOMAINS = [
-  'malicious-site.com',
-  'known-bad-actor.net',
-  // Add more as needed
-]
+const BLOCKLISTED_DOMAINS: string[] = []
 
 // Maximum redirect count to prevent redirect loops
 const MAX_REDIRECTS = 5
 
 // Timeout for fetch operations (in ms)
 const FETCH_TIMEOUT = 15000
-const HEAD_TIMEOUT = 5000
 
 /**
  * Parse a URL string into a URL object with error handling
@@ -83,12 +79,10 @@ async function safeFetch(urlString: string, method = 'GET', timeoutMs = FETCH_TI
     const response = await fetch(urlString, {
       method,
       headers: {
-        'User-Agent': 'Gleaming Image Service/1.0',
-        Accept: 'image/*',
+        'User-Agent': 'Gleaming/1.0',
       },
       redirect: 'follow',
       cf: {
-        cacheEverything: false,
         timeout: timeoutMs / 1000,
         maxRedirects: MAX_REDIRECTS,
       },
@@ -112,88 +106,46 @@ async function safeFetch(urlString: string, method = 'GET', timeoutMs = FETCH_TI
  */
 export const ingestImage: AppRouteHandler<IngestImageRoute> = async (c) => {
   // Extract payload from request body
-  const { url, slug } = c.req.valid('json')
+  const { url, slug: suffix } = c.req.valid('json')
 
   const userId = DEFAULT_USER_ID
   const workspaceId = DEFAULT_WORKSPACE_ID
 
   // Get services from context
   const storageService = c.get('storage')
-  const imageService = c.get('image')
   const db = c.get('db')
 
   try {
-    // Perform initial HEAD request for quick validation before full download
-    const headResponse = await safeFetch(url, 'HEAD', HEAD_TIMEOUT)
-
-    if (!headResponse.ok) {
-      throw badRequest(`Failed to access image URL: ${headResponse.statusText}`)
-    }
-
-    // Quick size check from HEAD request if available
-    // This helps avoid downloading files that are obviously too large
-    const contentLength = headResponse.headers.get('content-length')
-    if (contentLength) {
-      const size = parseInt(contentLength, 10)
-      if (size > MAX_FILE_SIZE) {
-        throw badRequest(`Image too large: ${size} bytes (max: ${MAX_FILE_SIZE} bytes)`)
-      }
-    }
-
     // Fetch the actual image
     const response = await safeFetch(url)
     if (!response.ok) {
       throw badRequest(`Failed to fetch image from URL: ${response.statusText}`)
     }
 
-    // Stream the response body
-    const imageStream = response.body as ReadableStream<Uint8Array>
-    if (!imageStream) {
-      throw badRequest('Failed to get response stream')
+    // Generate a unique ID for both storage and database
+    const id = ulid()
+
+    // Get content type from response headers or use a fallback
+    const contentType = response.headers.get('content-type') ?? 'application/octet-stream'
+
+    // Store file directly in R2 using the ID as the key
+    const r2Object = await storageService.storeFile(id, response.body, contentType)
+    const md5 = r2Object.checksums.md5
+    if (!md5) {
+      throw internalError('Failed to store file')
     }
 
-    // Get the content type
-    const contentType = response.headers.get('content-type')
-    if (!contentType) {
-      throw badRequest('Response has no content type')
-    }
+    // Generate a user-friendly slug
+    const slug = generateFileSlug(suffix)
 
-    // Clone the stream so we can use it multiple times
-    const [validationStream, processStream] = cloneStream(imageStream)
-
-    // Let the ImageService handle all image validation
-    // This will validate both format and size
-    const result = await imageService.validateImage(validationStream)
-    if (!result.success) {
-      throw badRequest(result.error)
-    }
-    const metadata = result.data
-
-    // Clone the process stream for hashing and storage
-    const [hashStream, storeStream] = cloneStream(processStream)
-
-    // Generate a content-based hash
-    const contentHash = await generateHashFromStream(hashStream)
-
-    // Check if file already exists
-    const existingFile = await storageService.fileExists(contentHash)
-
-    // If file doesn't exist, store it
-    if (!existingFile) {
-      await storageService.storeFile(contentHash, storeStream, contentType)
-    }
-
-    // Create slug - use time ID as base, add user-provided slug only if provided
-    const timeId = generateCompactTimeId()
-    const fileSlug = slug ? `${timeId}-${slug}` : timeId
-
-    // Create database record
+    // Create database record with the same ID
     const fileRecord = await db.createFile({
-      contentHash,
+      id,
+      contentHash: bytesToHex(new Uint8Array(md5)), // Use MD5 from R2 for deduplication potential
       contentType,
-      size: metadata.fileSize ?? 0, // Use the validated file size
-      metadata,
-      slug: fileSlug,
+      size: r2Object.size, // Use the actual size from R2
+      metadata: {},
+      slug,
       userId,
       workspaceId,
     })
@@ -205,10 +157,40 @@ export const ingestImage: AppRouteHandler<IngestImageRoute> = async (c) => {
 
     // Handle AppError instances
     if (error instanceof AppError) {
-      return c.json({ error: error.message, status: error.status }, error.status as 400) // TODO fix
+      const status = error.status === 404 || error.status === 415 ? 400 : error.status
+      return c.json({ error: error.message, status }, status as 400 | 500)
     }
 
     // Default to 500 for server errors
     return c.json({ error: 'Failed to process image ingestion', status: 500 }, 500)
   }
 }
+
+/* 
+  example r2object result
+  
+{
+  ssecKeyMd5: undefined,
+  storageClass: '',
+  range: undefined,
+  customMetadata: {},
+  httpMetadata: {},
+  uploaded: 2025-03-20T15:10:59.040Z,
+  checksums: Checksums {
+    sha512: undefined,
+    sha384: undefined,
+    sha256: undefined,
+    sha1: undefined,
+    md5: ArrayBuffer {
+      [Uint8Contents]: <65 bb 84 ea 96 ad 31 e4 e7 43 b6 4c d8 09 5f f2>,
+      byteLength: 16
+    }
+  },
+  httpEtag: '"65bb84ea96ad31e4e743b64cd8095ff2"',
+  etag: '65bb84ea96ad31e4e743b64cd8095ff2',
+  size: 1119160,
+  version: '24d9fac11b023509b935a47dcd4cfab6',
+  key: '3a3e4987c2b104c41e040b871b992acf7fded95e13f70b394f6ad4de7433802c' // note this is the old hash key
+}
+
+*/

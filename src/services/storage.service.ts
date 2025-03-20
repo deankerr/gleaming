@@ -4,7 +4,7 @@ import { internalError } from '../utils/errors'
  * Storage service for managing files in R2
  */
 export class StorageService {
-  private bucket: R2Bucket
+  bucket: R2Bucket
 
   constructor(bucket: R2Bucket) {
     this.bucket = bucket
@@ -14,18 +14,19 @@ export class StorageService {
    * Store a file in R2
    * @param key - The key to store the file under
    * @param file - The file data to store
-   * @param contentType - The content type of the file
+   * @param contentType - Optional content type of the file
    * @returns The stored object
    */
-  async storeFile(key: string, file: ArrayBuffer | ReadableStream<Uint8Array>, contentType: string) {
+  async storeFile(key: string, file: Parameters<R2Bucket['put']>[1], contentType?: string) {
     try {
-      const result = await this.bucket.put(key, file, {
-        httpMetadata: {
-          contentType,
-        },
-      })
+      // Prepare options object if we have a content type
+      const options = contentType ? { httpMetadata: { contentType } } : undefined
 
-      console.log('storage:put:', key)
+      const result = await this.bucket.put(key, file, options)
+      if (!result) {
+        throw new Error('Failed to store file')
+      }
+      console.log('storage:put:', key, result)
       return result
     } catch (error) {
       console.error('Failed to store file in R2:', error)

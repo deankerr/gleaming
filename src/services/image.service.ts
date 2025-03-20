@@ -20,19 +20,23 @@ export class ImageService {
   }
 
   /**
-   * Validate an image file
-   * @param imageData - The image data to validate
+   * Validate image and extract metadata
+   * @param stream - The image stream to validate
    * @returns Validation result with image info or error
    */
-  async validateImage(stream: ReadableStream<Uint8Array>): Promise<ImageValidationResult> {
+  async processMetadata(stream: ReadableStream<Uint8Array>): Promise<ImageValidationResult> {
     try {
       // throws ImagesError with code 9412 if input is not an image
       const data = await this.images.info(stream)
       // NOTE: image/svg+xml will not include width/height or fileSize
       return { success: true, data: data as ImageInfoMetadata }
     } catch (err) {
-      console.error(err)
-      return { success: false, error: 'Invalid image' }
+      if (err instanceof Error) {
+        if ('code' in err && typeof err.code === 'number' && err.code === 9412) {
+          return { success: false, error: 'Not a valid image format' }
+        }
+      }
+      throw err
     }
   }
 

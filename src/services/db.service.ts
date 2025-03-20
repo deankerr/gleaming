@@ -44,6 +44,7 @@ export class DBService {
    * Create a new file record
    */
   async createFile(data: {
+    id: string
     contentHash: string
     contentType: string
     size: number
@@ -52,10 +53,8 @@ export class DBService {
     userId: string
     workspaceId: string
   }) {
-    const id = ulid()
-
     await this.db.insert(files).values({
-      id,
+      id: data.id,
       contentHash: data.contentHash,
       contentType: data.contentType,
       size: data.size,
@@ -65,8 +64,8 @@ export class DBService {
       workspaceId: data.workspaceId,
     })
 
-    console.log('db:files:insert:', id)
-    return this.getFileById(id)
+    console.log('db:files:insert:', data)
+    return this.getFileById(data.id)
   }
 
   /**

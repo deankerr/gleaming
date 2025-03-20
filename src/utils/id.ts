@@ -25,3 +25,8 @@ export function generateCompactTimeId(): string {
 
   return `${timestampPart}${randomPart}`
 }
+
+export function generateFileSlug(suffix?: string) {
+  const compactTimeId = generateCompactTimeId()
+  return suffix ? `${compactTimeId}-${suffix}` : compactTimeId
+}
