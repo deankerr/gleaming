@@ -14,7 +14,7 @@
   "r2_buckets": [
     {
       "binding": "BUCKET",
-      "bucket_name": "gleaming-images"
+      "bucket_name": "filehost-gleaming"
     }
   ],
 
@@ -25,8 +25,8 @@
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "gleaming-db",
-      "database_id": "a64c2748-9729-407b-9d79-3c71c2fa21de",
+      "database_name": "filehost-gleaming",
+      "database_id": "f808468c-deb1-4b2d-b04b-9df75bbca22b",
       "migrations_dir": "src/db/migrations"
     }
   ],
