@@ -1,5 +1,5 @@
-import { Hono } from 'hono'
+// import { Hono } from 'hono'
 
-export function createRouter() {
-  return new Hono<{ Bindings: CloudflareBindings }>()
-}
+// export function createRouter() {
+//   return new Hono<{ Bindings: Cloudflare }>()
+// }

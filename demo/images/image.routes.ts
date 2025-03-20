@@ -1,3 +1,5 @@
+//@ts-nocheck
+
 import { createRouter } from '../../src/routers'
 import { createImageRepository, type Image } from './image.repository'
 
@@ -14,7 +16,7 @@ type UploadParams = {
 }
 
 async function extractImageMetadata(
-  env: CloudflareBindings,
+  env: Cloudflare,
   file: File,
 ): Promise<{
   format: string

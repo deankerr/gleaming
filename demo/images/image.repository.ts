@@ -1,3 +1,5 @@
+//@ts-nocheck
+
 export interface Image {
   uuid: string // UUID
   storageKey: string // R2 key
@@ -29,7 +31,7 @@ function deserializeImageMetadata(metadata: ImageCustomMetadata): Image {
   }
 }
 
-export function createImageRepository(env: CloudflareBindings) {
+export function createImageRepository(env: Cloudflare) {
   return {
     store: async (image: Image, fileStream: File) => {
       const { storageKey, userId, workspaceId } = image
