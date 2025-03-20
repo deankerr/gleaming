@@ -1,7 +1,7 @@
 import { DEFAULT_USER_ID, DEFAULT_WORKSPACE_ID } from '../../constants'
 import type { UploadImageRoute } from '../../routes/files'
 import type { AppRouteHandler } from '../../types'
-import { AppError } from '../../utils/errors'
+import { AppError, badRequest } from '../../utils/errors'
 import { cloneStream, generateHashFromStream } from '../../utils/hash'
 import { generateCompactTimeId } from '../../utils/id'
 
@@ -10,6 +10,7 @@ import { generateCompactTimeId } from '../../utils/id'
  */
 export const uploadImage: AppRouteHandler<UploadImageRoute> = async (c) => {
   const { file, slug } = c.req.valid('form')
+  console.log('upload:', { file, slug })
 
   const userId = DEFAULT_USER_ID
   const workspaceId = DEFAULT_WORKSPACE_ID
@@ -23,6 +24,10 @@ export const uploadImage: AppRouteHandler<UploadImageRoute> = async (c) => {
     let imageStream: ReadableStream<Uint8Array>
     let contentType: string
 
+    if (!file) {
+      throw badRequest('No file provided')
+    }
+
     contentType = file.type
     imageStream = file.stream()
 
@@ -31,7 +36,11 @@ export const uploadImage: AppRouteHandler<UploadImageRoute> = async (c) => {
 
     // Validate the image
     // This will validate both format and size
-    const metadata = await imageService.validateImage(validationStream, contentType)
+    const result = await imageService.validateImage(validationStream)
+    if (!result.success) {
+      throw badRequest(result.error)
+    }
+    const metadata = result.data
 
     // Clone the process stream for hashing and storage
     const [hashStream, storeStream] = cloneStream(processStream)
@@ -55,7 +64,7 @@ export const uploadImage: AppRouteHandler<UploadImageRoute> = async (c) => {
     const fileRecord = await db.createFile({
       contentHash,
       contentType,
-      size: metadata.fileSize, // Use the validated file size
+      size: metadata.fileSize ?? 0, // Use the validated file size
       metadata,
       slug: fileSlug,
       userId,

@@ -63,7 +63,12 @@ const ImageSchema = z
 // Direct file upload schema
 const UploadImageSchema = z
   .object({
-    file: z.instanceof(Blob),
+    // TODO blob validation stopped working?
+    file: z.any().openapi({
+      type: 'string',
+      format: 'binary',
+      description: 'Image file to upload',
+    }),
     slug: z.string().optional().openapi({
       description: 'Optional user-defined slug (will be combined with a time-sortable ID)',
       example: 'my-image',

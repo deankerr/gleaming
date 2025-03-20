@@ -163,12 +163,11 @@ export const ingestImage: AppRouteHandler<IngestImageRoute> = async (c) => {
 
     // Let the ImageService handle all image validation
     // This will validate both format and size
-    let metadata
-    try {
-      metadata = await imageService.validateImage(validationStream, contentType)
-    } catch (error) {
-      throw badRequest(`Invalid image data: ${error instanceof Error ? error.message : 'unknown error'}`)
+    const result = await imageService.validateImage(validationStream)
+    if (!result.success) {
+      throw badRequest(result.error)
     }
+    const metadata = result.data
 
     // Clone the process stream for hashing and storage
     const [hashStream, storeStream] = cloneStream(processStream)
@@ -192,7 +191,7 @@ export const ingestImage: AppRouteHandler<IngestImageRoute> = async (c) => {
     const fileRecord = await db.createFile({
       contentHash,
       contentType,
-      size: metadata.fileSize, // Use the validated file size
+      size: metadata.fileSize ?? 0, // Use the validated file size
       metadata,
       slug: fileSlug,
       userId,

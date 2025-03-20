@@ -1,13 +1,13 @@
-import { AppError, badRequest, internalError, unsupportedMediaType } from '../utils/errors'
-import { MAX_FILE_SIZE, VALID_IMAGE_TYPES } from '../constants'
-import { cloneStream, countStreamSize } from '../utils/hash'
+import { internalError } from '../utils/errors'
 
-export interface ImageMetadata {
+export interface ImageInfoMetadata {
+  format: string
   width?: number
   height?: number
-  format?: string
-  fileSize: number
+  fileSize?: number
 }
+
+type ImageValidationResult = { success: true; data: ImageInfoMetadata } | { success: false; error: string }
 
 /**
  * Service for image validation and processing
@@ -22,67 +22,17 @@ export class ImageService {
   /**
    * Validate an image file
    * @param imageData - The image data to validate
-   * @param contentType - The content type of the image
-   * @returns The validated image info
+   * @returns Validation result with image info or error
    */
-  async validateImage(imageData: ReadableStream<Uint8Array>, contentType: string): Promise<ImageMetadata> {
-    // Check content type
-    if (!VALID_IMAGE_TYPES.includes(contentType)) {
-      throw unsupportedMediaType(`Unsupported image type: ${contentType}`)
-    }
-
-    // Clone the stream so we can use it for both size checking and format validation
-    const [sizeStream, infoStream] = cloneStream(imageData)
-
-    // First, check the file size
+  async validateImage(stream: ReadableStream<Uint8Array>): Promise<ImageValidationResult> {
     try {
-      const fileSize = await countStreamSize(sizeStream)
-
-      // Check against maximum allowed size
-      if (fileSize > MAX_FILE_SIZE) {
-        throw badRequest(`Image size exceeds maximum allowed size of ${MAX_FILE_SIZE} bytes`)
-      }
-
-      // Now validate image format using Cloudflare Images
-      try {
-        const info = await this.images.info(infoStream)
-
-        // Extract relevant metadata
-        const metadata: ImageMetadata = {
-          format: info.format,
-          fileSize: fileSize, // Use our actual measured size
-        }
-
-        // Add dimensions if available
-        if ('width' in info && 'height' in info) {
-          metadata.width = info.width
-          metadata.height = info.height
-        }
-
-        return metadata
-      } catch (error) {
-        // Handle format validation errors
-        if (error instanceof Error) {
-          // Pass through AppError instances
-          if (error instanceof AppError) {
-            throw error
-          }
-
-          // Cloudflare Images might throw validation errors
-          throw badRequest(`Invalid image format: ${error.message}`)
-        }
-        throw badRequest('Invalid image format')
-      }
-    } catch (error) {
-      // Handle size checking errors or pass through other validation errors
-      if (error instanceof Error) {
-        // Pass through AppError instances
-        if (error instanceof AppError) {
-          throw error
-        }
-        throw badRequest(`Image validation failed: ${error.message}`)
-      }
-      throw badRequest('Invalid image data')
+      // throws ImagesError with code 9412 if input is not an image
+      const data = await this.images.info(stream)
+      // NOTE: image/svg+xml will not include width/height or fileSize
+      return { success: true, data: data as ImageInfoMetadata }
+    } catch (err) {
+      console.error(err)
+      return { success: false, error: 'Invalid image' }
     }
   }
 
@@ -92,7 +42,7 @@ export class ImageService {
    */
   async processImage(
     imageData: ReadableStream<Uint8Array>,
-    metadata: ImageMetadata,
+    metadata: ImageInfoMetadata,
   ): Promise<ReadableStream<Uint8Array>> {
     // In the future, we can add transformations here
     // For now, just return the original image
