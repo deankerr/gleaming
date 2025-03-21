@@ -1,9 +1,14 @@
 import { Hono } from 'hono'
-import { FilesPage, GalleryPage } from '../pages/dev'
+import { FilesPage, GalleryPage, UploadPage } from '../pages/dev'
 import type { AppEnv } from '../types'
 
 // Create the router
 const devRouter = new Hono<AppEnv>()
+
+// Upload page route
+devRouter.get('/upload', async (c) => {
+  return c.html(<UploadPage currentPath={c.req.path} />)
+})
 
 // Route to list files
 devRouter.get('/files', async (c) => {

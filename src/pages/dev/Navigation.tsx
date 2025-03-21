@@ -6,6 +6,7 @@ export interface NavigationProps {
 
 export const Navigation: FC<NavigationProps> = ({ currentPath }) => {
   const links = [
+    { href: '/dev/upload', label: 'Upload Images' },
     { href: '/dev/gallery', label: 'Image Gallery' },
     { href: '/dev/files', label: 'Files List' },
   ]
