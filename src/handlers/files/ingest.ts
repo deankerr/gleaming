@@ -1,6 +1,6 @@
 import { bytesToHex } from '@noble/hashes/utils'
 import { ulid } from 'ulidx'
-import { DEFAULT_USER_ID, DEFAULT_WORKSPACE_ID } from '../../constants'
+import { DEFAULT_USER_ID, DEFAULT_WORKSPACE_ID, VALID_IMAGE_TYPES } from '../../constants'
 import type { IngestImageRoute } from '../../routes/api'
 import type { AppRouteHandler } from '../../types'
 import { AppError, badRequest, internalError } from '../../utils/errors'
@@ -125,8 +125,11 @@ export const ingestImage: AppRouteHandler<IngestImageRoute> = async (c) => {
     // Generate a unique ID for both storage and database
     const id = ulid()
 
-    // Get content type from response headers or use a fallback
-    const contentType = response.headers.get('content-type') ?? 'application/octet-stream'
+    // Only accept allowed image content types
+    const contentType = response.headers.get('content-type')
+    if (!contentType || !VALID_IMAGE_TYPES.includes(contentType)) {
+      throw badRequest(`Unsupported content type: ${contentType}`)
+    }
 
     // Store file directly in R2 using the ID as the key
     const r2Object = await storageService.storeFile(id, response.body, contentType)
