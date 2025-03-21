@@ -14,3 +14,12 @@ export type AppEnv = {
 }
 
 export type AppRouteHandler<R extends RouteConfig> = RouteHandler<R, AppEnv>
+
+// File metadata interface for our gallery component
+export interface FileMetadata {
+  slug: string
+  contentType: string
+  size: number
+  createdAt: string
+  metadata?: Record<string, unknown>
+}

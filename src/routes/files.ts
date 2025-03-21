@@ -1,7 +1,7 @@
 import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi'
 import { getImageInfoBySlug } from '../handlers/files/info'
 import { ingestImage } from '../handlers/files/ingest'
-import { serveImage, ImageTransformParamsSchema } from '../handlers/files/serve'
+import { serveFile, ImageTransformParamsSchema } from '../handlers/files/serve'
 import { uploadImage } from '../handlers/files/upload'
 import type { AppEnv } from '../types'
 
@@ -230,22 +230,28 @@ const getFileInfo = createRoute({
   },
 })
 
-// 3. Serve image by slug
-const serveImageRoute = createRoute({
+// 3. Serve file by slug
+const serveFileRoute = createRoute({
   method: 'get',
   path: '/file/{slug}',
   tags: ['Files'],
-  summary: 'Serve image by slug',
-  description: 'Serve an image by its unique slug with optional transformations',
+  summary: 'Serve file by slug',
+  description: 'Serve a file by its unique slug with optional transformations for images',
   request: {
     params: FileParamsSchema,
     query: ImageTransformParamsSchema,
   },
   responses: {
     200: {
-      description: 'Image served successfully',
+      description: 'File served successfully',
       content: {
         'image/*': {
+          schema: z.any().openapi({
+            type: 'string',
+            format: 'binary',
+          }),
+        },
+        'application/octet-stream': {
           schema: z.any().openapi({
             type: 'string',
             format: 'binary',
@@ -279,11 +285,11 @@ const filesRouter = new OpenAPIHono<AppEnv>()
 filesRouter.openapi(uploadImageRoute, uploadImage)
 filesRouter.openapi(ingestImageRoute, ingestImage)
 filesRouter.openapi(getFileInfo, getImageInfoBySlug)
-filesRouter.openapi(serveImageRoute, serveImage)
+filesRouter.openapi(serveFileRoute, serveFile)
 
 export { filesRouter }
 
 export type UploadImageRoute = typeof uploadImageRoute
 export type IngestImageRoute = typeof ingestImageRoute
 export type GetImageBySlugRoute = typeof getFileInfo
-export type ServeImageRoute = typeof serveImageRoute
+export type ServeImageRoute = typeof serveFileRoute

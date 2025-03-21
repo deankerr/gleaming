@@ -41,19 +41,6 @@ export class ImageService {
   }
 
   /**
-   * Process an image for storage
-   * Currently a stub as we're starting with simple storage only
-   */
-  async processImage(
-    imageData: ReadableStream<Uint8Array>,
-    metadata: ImageInfoMetadata,
-  ): Promise<ReadableStream<Uint8Array>> {
-    // In the future, we can add transformations here
-    // For now, just return the original image
-    return imageData
-  }
-
-  /**
    * Transform an image with the given options
    * @param imageData - The image data to transform
    * @param options - Transform options like width, height, and format
@@ -95,6 +82,40 @@ export class ImageService {
       console.error('Image transformation failed:', error)
       throw internalError('Failed to transform image')
     }
+  }
+
+  /**
+   * Transform an image and return both the transformed image and content type
+   * @param imageData - The image data to transform
+   * @param params - Transform parameters from request query
+   * @returns Object containing transformed image and content type
+   */
+  async transformWithFormat(
+    imageData: ReadableStream<Uint8Array>,
+    params: {
+      width?: string
+      height?: string
+      format?: string
+      fit?: 'scale-down' | 'contain' | 'cover' | 'crop' | 'pad'
+      quality?: string
+    },
+  ): Promise<{ transformedImage: ReadableStream<Uint8Array>; contentType: string }> {
+    // Convert string parameters to appropriate types
+    const options: Record<string, any> = {}
+
+    if (params.width) options.width = parseInt(params.width, 10)
+    if (params.height) options.height = parseInt(params.height, 10)
+    if (params.fit) options.fit = params.fit
+    if (params.quality) options.quality = parseInt(params.quality, 10)
+    if (params.format) options.format = params.format
+
+    // Transform the image
+    const transformedImage = await this.transform(imageData, options)
+
+    // Determine content type based on requested format
+    const contentType = getOutputFormat(params.format)
+
+    return { transformedImage, contentType }
   }
 }
 
