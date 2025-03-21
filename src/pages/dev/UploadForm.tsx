@@ -45,7 +45,8 @@ export const UploadForm: FC = () => {
         }
         
         input[type="text"],
-        input[type="file"] {
+        input[type="file"],
+        input[type="password"] {
           width: 100%;
           padding: 10px;
           border: 1px solid #ddd;
@@ -78,13 +79,19 @@ export const UploadForm: FC = () => {
           color: #666;
           margin-top: 6px;
         }
+
+        .auth-field {
+          margin-top: 20px;
+          padding-top: 20px;
+          border-top: 1px dashed #eee;
+        }
       `}</style>
 
       <div class="forms-container">
         {/* File Upload Form */}
         <div class="form-box">
           <h2 class="form-title">File Upload</h2>
-          <form action="/api/upload" method="post" enctype="multipart/form-data">
+          <form id="upload-form" onsubmit="handleUpload(event)">
             <div class="form-group">
               <label for="file">Select Image</label>
               <input type="file" id="file" name="file" accept="image/*" required />
@@ -94,10 +101,65 @@ export const UploadForm: FC = () => {
               <input type="text" id="slug" name="slug" placeholder="my-awesome-image" />
               <div class="note">A unique identifier will be prepended to your slug</div>
             </div>
+            <div class="form-group auth-field">
+              <label for="api-token">API Token</label>
+              <input type="password" id="api-token" name="token" placeholder="Enter API token" />
+              <div class="note">Required for authentication</div>
+            </div>
             <button type="submit" class="button">
               Upload Image
             </button>
           </form>
+
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `
+            function handleUpload(event) {
+              event.preventDefault();
+              
+              const fileInput = document.getElementById('file');
+              const slug = document.getElementById('slug').value;
+              const token = document.getElementById('api-token').value;
+              
+              if (!fileInput.files || fileInput.files.length === 0) {
+                alert('Please select a file to upload');
+                return;
+              }
+              
+              const formData = new FormData();
+              formData.append('file', fileInput.files[0]);
+              if (slug) {
+                formData.append('slug', slug);
+              }
+              
+              // Create headers with authentication
+              const headers = {};
+              if (token) {
+                headers['Authorization'] = 'Bearer ' + token;
+              }
+              
+              // Submit the form
+              fetch('/api/upload', {
+                method: 'POST',
+                headers: headers,
+                body: formData
+              })
+              .then(response => {
+                if (response.ok) {
+                  window.location.href = '/dev/gallery';
+                } else {
+                  return response.json().then(data => {
+                    alert('Error: ' + (data.error || 'Unknown error'));
+                  });
+                }
+              })
+              .catch(error => {
+                alert('Error: ' + error.message);
+              });
+            }
+          `,
+            }}
+          ></script>
         </div>
 
         {/* URL Ingestion Form */}
@@ -113,6 +175,11 @@ export const UploadForm: FC = () => {
               <input type="text" id="url-slug" name="slug" placeholder="my-awesome-image" />
               <div class="note">A unique identifier will be prepended to your slug</div>
             </div>
+            <div class="form-group auth-field">
+              <label for="ingest-api-token">API Token</label>
+              <input type="password" id="ingest-api-token" name="token" placeholder="Enter API token" />
+              <div class="note">Required for authentication</div>
+            </div>
             <button type="submit" class="button">
               Ingest Image
             </button>
@@ -126,6 +193,7 @@ export const UploadForm: FC = () => {
               
               const url = document.getElementById('url').value;
               const slug = document.getElementById('url-slug').value;
+              const token = document.getElementById('ingest-api-token').value;
               
               // Create the JSON payload
               const payload = { url: url };
@@ -133,12 +201,18 @@ export const UploadForm: FC = () => {
                 payload.slug = slug;
               }
               
+              // Create headers with authentication
+              const headers = {
+                'Content-Type': 'application/json'
+              };
+              if (token) {
+                headers['Authorization'] = 'Bearer ' + token;
+              }
+              
               // Submit as JSON
               fetch('/api/ingest', {
                 method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json'
-                },
+                headers: headers,
                 body: JSON.stringify(payload)
               })
               .then(response => {

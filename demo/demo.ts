@@ -4,11 +4,14 @@ import { join, basename } from 'node:path'
 import { parseArgs } from 'node:util'
 
 // Configuration constants
-const API_BASE_URL = 'http://localhost:8787/api'
-const PATH_UPLOAD = '/upload'
-const PATH_INGEST = '/ingest'
-const PATH_INFO = '/info'
+const API_BASE_URL = 'http://localhost:8787'
+const PATH_UPLOAD = '/api/upload'
+const PATH_INGEST = '/api/ingest'
+const PATH_INFO = '/api/info'
 const PATH_SERVE = '/file'
+
+// Get API token from environment variables
+const ENV_API_TOKEN = process.env.API_TOKEN
 
 // Command line arguments parsing
 const { values, positionals } = parseArgs({
@@ -22,6 +25,15 @@ const { values, positionals } = parseArgs({
     slug: {
       type: 'string',
       short: 's',
+    },
+    token: {
+      type: 'string',
+      short: 't',
+      default: ENV_API_TOKEN, // Use env var as default if available
+    },
+    noauth: {
+      type: 'boolean',
+      default: false,
     },
   },
   allowPositionals: true,
@@ -59,20 +71,45 @@ Usage: bun run demo.ts <command> [options]
 
 Commands:
   upload <filename>            Upload a file from the demo directory
-  ingest <url>                 Ingest an image from a URL (experimental)
+  ingest <url>                 Ingest an image from a URL 
   get <hash>                   Get a file by its content hash
   help                         Show this help message
 
 Options:
   -u, --url <url>              API base URL (default: ${API_BASE_URL})
   -s, --slug <slug>            Custom slug to use for the file
+  -t, --token <token>          API token for authentication (default: from env var API_TOKEN)
+  --noauth                     Skip authentication (will demonstrate auth failure)
 
 Examples:
   bun run demo.ts upload demo_1.png
   bun run demo.ts ingest https://example.com/image.jpg --slug my-example
   bun run demo.ts get abc123def456
   bun run demo.ts upload demo_1.png --url https://your-api.example.com/api
+  bun run demo.ts upload demo_1.png --token your-api-token
+  bun run demo.ts upload demo_1.png --noauth  # Demonstrate auth failure
 `)
+}
+
+// Creates headers with or without authentication
+function createHeaders(contentType?: string): HeadersInit {
+  const headers: HeadersInit = {}
+
+  if (contentType) {
+    headers['Content-Type'] = contentType
+  }
+
+  // Add authorization header if token is available and noauth is not set
+  if (values.token && !values.noauth) {
+    headers['Authorization'] = `Bearer ${values.token}`
+    console.log('Using authentication token')
+  } else if (values.noauth) {
+    console.log('Authentication disabled with --noauth flag')
+  } else {
+    console.log('No authentication token provided. Use --token or set API_TOKEN env var')
+  }
+
+  return headers
 }
 
 // Helper function to display file details
@@ -128,9 +165,10 @@ async function uploadFile(filename?: string) {
     console.log(`Uploading ${filename} (${formatBytes(fileBuffer.byteLength)})...`)
     console.log(`Using custom slug: ${slug}`)
 
-    // Make the API request
+    // Make the API request with authentication header
     const response = await fetch(`${values.url}${PATH_UPLOAD}`, {
       method: 'POST',
+      headers: createHeaders(),
       body: formData,
       verbose: true,
     })
@@ -177,12 +215,10 @@ async function ingestImageUrl(url?: string) {
       slug: values.slug,
     }
 
-    // Make the API request
+    // Make the API request with authentication header
     const response = await fetch(`${values.url}${PATH_INGEST}`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: createHeaders('application/json'),
       body: JSON.stringify(payload),
     })
 
@@ -215,8 +251,10 @@ async function getFile(hash?: string) {
   console.log(`Retrieving file with hash ${hash}...`)
 
   try {
-    // Make the API request
-    const response = await fetch(`${values.url}${PATH_INFO}/${hash}`)
+    // Make the API request with authentication header
+    const response = await fetch(`${values.url}${PATH_INFO}/${hash}`, {
+      headers: createHeaders(),
+    })
 
     // Parse response
     const data = (await response.json()) as any

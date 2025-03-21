@@ -36,7 +36,8 @@
    * https://developers.cloudflare.com/workers/wrangler/configuration/#environment-variables
    */
   "vars": {
-    "ENVIRONMENT": "development"
+    "ENVIRONMENT": "development",
+    "API_TOKEN": ""
   },
 
   /**
@@ -47,6 +48,7 @@
    * - CF_ACCOUNT_ID (Your Cloudflare account ID)
    * - CF_API_TOKEN (API token with R2 access)
    * - API_SECRET (For secure API access - future use)
+   * - API_TOKEN (The bearer token for API authentication)
    */
 
   /**

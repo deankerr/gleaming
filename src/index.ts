@@ -4,14 +4,15 @@ import { HTTPException } from 'hono/http-exception'
 import { logger } from 'hono/logger'
 import { prettyJSON } from 'hono/pretty-json'
 import { secureHeaders } from 'hono/secure-headers'
+import { apiAuth } from './middleware/auth'
 import { serveEmojiFavicon } from './middleware/serve-emoji-favicon'
-import { devRouter } from './routes/dev'
 import { apiRouter } from './routes/api'
+import { devRouter } from './routes/dev'
+import { fileRouter } from './routes/file'
 import { DBService } from './services/db.service'
 import { ImageService } from './services/image.service'
 import { StorageService } from './services/storage.service'
 import type { AppEnv } from './types'
-import { fileRouter } from './routes/file'
 
 const app = new OpenAPIHono<AppEnv>({
   strict: false, // allow trailing slashes
@@ -32,22 +33,27 @@ app.use('*', async (c, next) => {
   await next()
 })
 
-// Standard middleware
+// Standard middleware - apply these first so they work for all routes
 app.use('*', logger())
 app.use('*', secureHeaders())
 app.use('*', prettyJSON())
 app.use('*', serveEmojiFavicon('🤩'))
 
-// Mount the routers
+app.use('/api/*', apiAuth())
 app.route('/api', apiRouter)
+
 app.route('/dev', devRouter)
+
+// Public file routes
 app.route('/file', fileRouter)
 
 app.doc('/doc', {
   openapi: '3.0.0',
   info: {
     version: '1.0.0',
-    title: 'My API',
+    title: 'Gleaming API',
+    description:
+      'API for the Gleaming image hosting service. Protected with Bearer auth - include your API token in the Authorization header.',
   },
 })
 
