@@ -133,9 +133,9 @@ export const ImageGallery: FC<ImageGalleryProps> = ({ images }) => {
             return (
               <div class="image-card">
                 <div class="thumbnail-container">
-                  <a href={`/api/file/${file.slug}`} target="_blank">
+                  <a href={`/file/${file.slug}`} target="_blank">
                     <img
-                      src={`/api/file/${file.slug}?width=500&height=400&fit=cover`}
+                      src={`/file/${file.slug}?width=500&height=400&fit=cover`}
                       alt={file.slug}
                       class="thumbnail"
                       loading="lazy"
@@ -156,14 +156,14 @@ export const ImageGallery: FC<ImageGalleryProps> = ({ images }) => {
                     <span>{formatDateRelative(file.createdAt)}</span>
                   </div>
                   <div class="btn-group">
-                    <a href={`/api/file/${file.slug}`} target="_blank" class="btn btn-primary">
+                    <a href={`/file/${file.slug}`} target="_blank" class="btn btn-primary">
                       Original
                     </a>
                     <a href={`/api/info/${file.slug}`} target="_blank" class="btn">
                       Info
                     </a>
                     <a
-                      href={`/api/file/${file.slug}?width=200&height=200&fit=contain&format=webp`}
+                      href={`/file/${file.slug}?width=200&height=200&fit=contain&format=webp`}
                       target="_blank"
                       class="btn"
                     >

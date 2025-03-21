@@ -1,6 +1,6 @@
 import { ulid } from 'ulidx'
 import { DEFAULT_USER_ID, DEFAULT_WORKSPACE_ID } from '../../constants'
-import type { UploadImageRoute } from '../../routes/files'
+import type { UploadImageRoute } from '../../routes/api'
 import type { AppRouteHandler } from '../../types'
 import { AppError, badRequest } from '../../utils/errors'
 import { generateFileSlug } from '../../utils/id'

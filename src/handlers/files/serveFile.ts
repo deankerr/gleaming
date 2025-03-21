@@ -1,5 +1,5 @@
 import { z } from '@hono/zod-openapi'
-import type { ServeImageRoute } from '../../routes/files'
+import type { ServeFileRoute } from '../../routes/file'
 import type { AppRouteHandler } from '../../types'
 import { AppError, notFound } from '../../utils/errors'
 
@@ -69,7 +69,7 @@ export interface TransformParams {
 /**
  * Handler for serving a file by its slug
  */
-export const serveFile: AppRouteHandler<ServeImageRoute> = async (c) => {
+export const serveFile: AppRouteHandler<ServeFileRoute> = async (c) => {
   const { slug } = c.req.valid('param')
   const queryParams = c.req.query()
 

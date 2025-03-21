@@ -4,13 +4,14 @@ import { HTTPException } from 'hono/http-exception'
 import { logger } from 'hono/logger'
 import { prettyJSON } from 'hono/pretty-json'
 import { secureHeaders } from 'hono/secure-headers'
-import serveEmojiFavicon from './middleware/serve-emoji-favicon'
+import { serveEmojiFavicon } from './middleware/serve-emoji-favicon'
 import { devRouter } from './routes/dev'
-import { filesRouter } from './routes/files'
+import { apiRouter } from './routes/api'
 import { DBService } from './services/db.service'
 import { ImageService } from './services/image.service'
 import { StorageService } from './services/storage.service'
 import type { AppEnv } from './types'
+import { fileRouter } from './routes/file'
 
 const app = new OpenAPIHono<AppEnv>({
   strict: false, // allow trailing slashes
@@ -38,9 +39,17 @@ app.use('*', prettyJSON())
 app.use('*', serveEmojiFavicon('🤩'))
 
 // Mount the routers
-// app.route('/api', demoApp)
-app.route('/api', filesRouter)
+app.route('/api', apiRouter)
 app.route('/dev', devRouter)
+app.route('/file', fileRouter)
+
+app.doc('/doc', {
+  openapi: '3.0.0',
+  info: {
+    version: '1.0.0',
+    title: 'My API',
+  },
+})
 
 // Global error handler
 app.onError((err, c) => {
@@ -72,9 +81,6 @@ app.notFound((c) => {
   return c.json(errorResponse, 404)
 })
 
-// Redirect root to API docs
-app.get('/', (c) => c.redirect('/api/docs'))
-
-showRoutes(app, { verbose: true })
+showRoutes(app, { verbose: false })
 
 export default app

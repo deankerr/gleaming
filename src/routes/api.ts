@@ -1,7 +1,6 @@
 import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi'
 import { getImageInfoBySlug } from '../handlers/files/info'
 import { ingestImage } from '../handlers/files/ingest'
-import { serveFile, ImageTransformParamsSchema } from '../handlers/files/serve'
 import { uploadImage } from '../handlers/files/upload'
 import type { AppEnv } from '../types'
 
@@ -230,66 +229,16 @@ const getFileInfo = createRoute({
   },
 })
 
-// 3. Serve file by slug
-const serveFileRoute = createRoute({
-  method: 'get',
-  path: '/file/{slug}',
-  tags: ['Files'],
-  summary: 'Serve file by slug',
-  description: 'Serve a file by its unique slug with optional transformations for images',
-  request: {
-    params: FileParamsSchema,
-    query: ImageTransformParamsSchema,
-  },
-  responses: {
-    200: {
-      description: 'File served successfully',
-      content: {
-        'image/*': {
-          schema: z.any().openapi({
-            type: 'string',
-            format: 'binary',
-          }),
-        },
-        'application/octet-stream': {
-          schema: z.any().openapi({
-            type: 'string',
-            format: 'binary',
-          }),
-        },
-      },
-    },
-    404: {
-      content: {
-        'application/json': {
-          schema: ErrorSchema,
-        },
-      },
-      description: 'File not found',
-    },
-    500: {
-      content: {
-        'application/json': {
-          schema: ErrorSchema,
-        },
-      },
-      description: 'Internal server error',
-    },
-  },
-})
-
 // Create the router with OpenAPIHono
-const filesRouter = new OpenAPIHono<AppEnv>()
+const apiRouter = new OpenAPIHono<AppEnv>()
 
 // Register routes
-filesRouter.openapi(uploadImageRoute, uploadImage)
-filesRouter.openapi(ingestImageRoute, ingestImage)
-filesRouter.openapi(getFileInfo, getImageInfoBySlug)
-filesRouter.openapi(serveFileRoute, serveFile)
+apiRouter.openapi(uploadImageRoute, uploadImage)
+apiRouter.openapi(ingestImageRoute, ingestImage)
+apiRouter.openapi(getFileInfo, getImageInfoBySlug)
 
-export { filesRouter }
+export { apiRouter }
 
 export type UploadImageRoute = typeof uploadImageRoute
 export type IngestImageRoute = typeof ingestImageRoute
 export type GetImageBySlugRoute = typeof getFileInfo
-export type ServeImageRoute = typeof serveFileRoute

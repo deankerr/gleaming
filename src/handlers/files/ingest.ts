@@ -1,7 +1,7 @@
 import { bytesToHex } from '@noble/hashes/utils'
 import { ulid } from 'ulidx'
 import { DEFAULT_USER_ID, DEFAULT_WORKSPACE_ID } from '../../constants'
-import type { IngestImageRoute } from '../../routes/files'
+import type { IngestImageRoute } from '../../routes/api'
 import type { AppRouteHandler } from '../../types'
 import { AppError, badRequest, internalError } from '../../utils/errors'
 import { generateFileSlug } from '../../utils/id'
@@ -165,32 +165,3 @@ export const ingestImage: AppRouteHandler<IngestImageRoute> = async (c) => {
     return c.json({ error: 'Failed to process image ingestion', status: 500 }, 500)
   }
 }
-
-/* 
-  example r2object result
-  
-{
-  ssecKeyMd5: undefined,
-  storageClass: '',
-  range: undefined,
-  customMetadata: {},
-  httpMetadata: {},
-  uploaded: 2025-03-20T15:10:59.040Z,
-  checksums: Checksums {
-    sha512: undefined,
-    sha384: undefined,
-    sha256: undefined,
-    sha1: undefined,
-    md5: ArrayBuffer {
-      [Uint8Contents]: <65 bb 84 ea 96 ad 31 e4 e7 43 b6 4c d8 09 5f f2>,
-      byteLength: 16
-    }
-  },
-  httpEtag: '"65bb84ea96ad31e4e743b64cd8095ff2"',
-  etag: '65bb84ea96ad31e4e743b64cd8095ff2',
-  size: 1119160,
-  version: '24d9fac11b023509b935a47dcd4cfab6',
-  key: '3a3e4987c2b104c41e040b871b992acf7fded95e13f70b394f6ad4de7433802c' // note this is the old hash key
-}
-
-*/

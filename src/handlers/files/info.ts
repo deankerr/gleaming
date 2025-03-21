@@ -1,4 +1,4 @@
-import type { GetImageBySlugRoute } from '../../routes/files'
+import type { GetImageBySlugRoute } from '../../routes/api'
 import type { AppRouteHandler } from '../../types'
 import { AppError, notFound } from '../../utils/errors'
 

@@ -121,7 +121,7 @@ export const FilesList: FC<FilesListProps> = ({ files }) => {
                   <td class="size-cell">{formatFileSize(file.size)}</td>
                   <td class="date-cell">{formatDateRelative(file.createdAt)}</td>
                   <td class="action-cell">
-                    <a href={`/api/file/${file.slug}`} target="_blank" class="btn btn-primary">
+                    <a href={`/file/${file.slug}`} target="_blank" class="btn btn-primary">
                       View
                     </a>
                     <a href={`/api/info/${file.slug}`} target="_blank" class="btn">

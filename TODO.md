@@ -1,0 +1,7 @@
+- File extension handling
+- Reorganise dir structure to domain-based
+- Zod schema, content type helpers
+- zod-openapi default hook validation handling
+- Error normalization
+- Investigate form data handling, alternate upload methods (eg. put body to slug param)
+-
