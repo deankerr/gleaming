@@ -57,9 +57,9 @@ export const Layout: FC<LayoutProps> = ({ title, description, count, children, c
         <div class="header">
           <div>
             <h1>${title}</h1>
-            ${description ? `<p class="description">${description}</p>` : ''}
+            ${description ? html`<p class="description">${description}</p>` : ''}
           </div>
-          ${count !== undefined ? `<span class="count">${count} items</span>` : ''}
+          ${count !== undefined ? html`<span class="count">${count} items</span>` : ''}
         </div>
         ${children}
       </body>

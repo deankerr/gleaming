@@ -94,7 +94,7 @@ export const serveFile: AppRouteHandler<ServeImageRoute> = async (c) => {
     }
 
     // Get the file from storage
-    const r2Object = await storageService.getFile(fileRecord.contentHash)
+    const r2Object = await storageService.getFile(fileRecord.id)
     if (!r2Object) {
       throw notFound('File content')
     }
@@ -109,7 +109,11 @@ export const serveFile: AppRouteHandler<ServeImageRoute> = async (c) => {
     )
 
     // If transformations are requested and it's an image, transform it
-    if (hasTransforms && fileRecord.contentType.startsWith('image/')) {
+    if (
+      hasTransforms &&
+      fileRecord.contentType.startsWith('image/') &&
+      fileRecord.contentType !== 'image/svg+xml'
+    ) {
       // Let the image service handle the transformation
       const { transformedImage, contentType } = await imageService.transformWithFormat(
         r2Object.body,

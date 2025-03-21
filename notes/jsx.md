@@ -724,3 +724,67 @@ Client Components can use most of the same React-compatible Hooks including:
    - Use the CSS helper for component-scoped styles
    - Apply global styles with the `:-hono-global` selector
    - Consider VS Code's styled-components extension for better syntax highlighting
+
+## Common Mistakes and Pitfalls
+
+### Nested HTML in Template Literals
+
+A frequent error when using the `html` template literal tag is not properly nesting HTML content, which causes it to be escaped and rendered as text:
+
+```tsx
+// INCORRECT: This will escape the HTML and render it as text
+const Layout = ({ title, description }) => html`
+  <div>
+    <h1>${title}</h1>
+    ${description ? `<p class="description">${description}</p>` : ''}
+  </div>
+`
+
+// CORRECT: Wrap nested HTML in the html tag
+const Layout = ({ title, description }) => html`
+  <div>
+    <h1>${title}</h1>
+    ${description ? html`<p class="description">${description}</p>` : ''}
+  </div>
+`
+```
+
+When nesting HTML content within template conditions or expressions, always wrap the nested HTML with the `html` tag to ensure proper rendering.
+
+### Integration with html Middleware
+
+JSX can be combined with Hono's html template literal middleware for flexible templating:
+
+```tsx
+import { Hono } from 'hono'
+import { html } from 'hono/html'
+
+const app = new Hono()
+
+// HTML template literal for layout
+const Layout = (props: { title: string; children?: any }) => html`
+  <!DOCTYPE html>
+  <html>
+    <head>
+      <title>${props.title}</title>
+    </head>
+    <body>
+      ${props.children}
+    </body>
+  </html>
+`
+
+// JSX component using the html layout
+const Page = (props: { title: string; username: string }) => (
+  <Layout title={props.title}>
+    <h1>Welcome, {props.username}</h1>
+  </Layout>
+)
+
+app.get('/:username', (c) => {
+  const { username } = c.req.param()
+  return c.html(<Page title="Welcome Page" username={username} />)
+})
+
+export default app
+```
