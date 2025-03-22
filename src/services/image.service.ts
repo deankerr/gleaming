@@ -1,4 +1,4 @@
-import { internalError } from '../utils/errors'
+import type { ImageTransformParams } from '../handlers/files/serveFile'
 
 export interface ImageInfoMetadata {
   format: string
@@ -40,82 +40,12 @@ export class ImageService {
     }
   }
 
-  /**
-   * Transform an image with the given options
-   * @param imageData - The image data to transform
-   * @param options - Transform options like width, height, and format
-   * @returns The transformed image data
-   */
-  async transform(
-    imageData: ReadableStream<Uint8Array>,
-    options: {
-      width?: number
-      height?: number
-      fit?: 'scale-down' | 'contain' | 'cover' | 'crop' | 'pad'
-      quality?: number
-      format?: string
-    },
-  ): Promise<ReadableStream<Uint8Array>> {
-    try {
-      // Use Cloudflare Images API to transform the image
-      const transformer = this.images.input(imageData)
-
-      // Apply transformations
-      const transformOptions: ImageTransform = {
-        width: options.width,
-        height: options.height,
-        fit: options.fit,
-      }
-
-      const transformed = transformer.transform(transformOptions)
-
-      // Set output format and quality
-      const outputOptions: ImageOutputOptions = {
-        format: getOutputFormat(options.format),
-        quality: options.quality,
-      }
-
-      // Get the transformed image
-      const result = await transformed.output(outputOptions)
-      return result.image()
-    } catch (error) {
-      console.error('Image transformation failed:', error)
-      throw internalError('Failed to transform image')
-    }
-  }
-
-  /**
-   * Transform an image and return both the transformed image and content type
-   * @param imageData - The image data to transform
-   * @param params - Transform parameters from request query
-   * @returns Object containing transformed image and content type
-   */
-  async transformWithFormat(
-    imageData: ReadableStream<Uint8Array>,
-    params: {
-      width?: string
-      height?: string
-      format?: string
-      fit?: 'scale-down' | 'contain' | 'cover' | 'crop' | 'pad'
-      quality?: string
-    },
-  ): Promise<{ transformedImage: ReadableStream<Uint8Array>; contentType: string }> {
-    // Convert string parameters to appropriate types
-    const options: Record<string, any> = {}
-
-    if (params.width) options.width = parseInt(params.width, 10)
-    if (params.height) options.height = parseInt(params.height, 10)
-    if (params.fit) options.fit = params.fit
-    if (params.quality) options.quality = parseInt(params.quality, 10)
-    if (params.format) options.format = params.format
-
-    // Transform the image
-    const transformedImage = await this.transform(imageData, options)
-
-    // Determine content type based on requested format
-    const contentType = getOutputFormat(params.format)
-
-    return { transformedImage, contentType }
+  async transform(stream: ReadableStream<Uint8Array>, options: ImageTransformParams) {
+    const { format, quality, ...transforms } = options
+    return await this.images
+      .input(stream)
+      .transform(transforms)
+      .output({ format: getOutputFormat(format), quality })
   }
 }
 
@@ -125,11 +55,7 @@ export class ImageService {
 function getOutputFormat(
   format?: string,
 ): 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp' | 'image/avif' {
-  if (!format) return 'image/webp' // Default
-
   switch (format) {
-    case 'webp':
-      return 'image/webp'
     case 'jpeg':
       return 'image/jpeg'
     case 'png':

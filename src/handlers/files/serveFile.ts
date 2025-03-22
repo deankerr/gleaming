@@ -2,11 +2,25 @@ import { z } from '@hono/zod-openapi'
 import type { ServeFileRoute } from '../../routes/file'
 import type { AppRouteHandler } from '../../types'
 import { AppError, notFound } from '../../utils/errors'
+import type { FileMetadata } from '../../db/schema'
 
 // Define the supported transformations
 export const ImageTransformParamsSchema = z.object({
+  anim: z
+    .enum(['true', 'false'])
+    .transform((val) => val === 'true')
+    .optional()
+    .openapi({
+      param: {
+        name: 'anim',
+        in: 'query',
+      },
+      example: 'false',
+    }),
   width: z
     .string()
+    .transform((val) => parseInt(val, 10))
+    .pipe(z.number().int().positive())
     .optional()
     .openapi({
       param: {
@@ -17,6 +31,8 @@ export const ImageTransformParamsSchema = z.object({
     }),
   height: z
     .string()
+    .transform((val) => parseInt(val, 10))
+    .pipe(z.number().int().positive())
     .optional()
     .openapi({
       param: {
@@ -47,6 +63,8 @@ export const ImageTransformParamsSchema = z.object({
     }),
   quality: z
     .string()
+    .transform((val) => parseInt(val, 10))
+    .pipe(z.number().int().positive())
     .optional()
     .openapi({
       param: {
@@ -55,16 +73,31 @@ export const ImageTransformParamsSchema = z.object({
       },
       example: '85',
     }),
+  flip: z
+    .enum(['h', 'v', 'hv'])
+    .optional()
+    .openapi({
+      param: {
+        name: 'flip',
+        in: 'query',
+      },
+      example: 'hv',
+    }),
+  rotate: z
+    .enum(['90', '180', '270'])
+    .transform((val) => parseInt(val, 10))
+    .pipe(z.number().int().positive())
+    .optional()
+    .openapi({
+      param: {
+        name: 'rotate',
+        in: 'query',
+      },
+      example: '90',
+    }),
 })
 
-// Type for transform params
-export interface TransformParams {
-  width?: string
-  height?: string
-  format?: string
-  fit?: 'scale-down' | 'contain' | 'cover' | 'crop' | 'pad'
-  quality?: string
-}
+export type ImageTransformParams = z.infer<typeof ImageTransformParamsSchema>
 
 /**
  * Handler for serving a file by its slug
@@ -73,16 +106,7 @@ export const serveFile: AppRouteHandler<ServeFileRoute> = async (c) => {
   const param = c.req.valid('param')
   // Extract just the base externalId without extension and ignoring subpath
   const externalId = param.externalId.split('.')[0] // remove extension
-  const queryParams = c.req.query()
-
-  // Extract transformation parameters
-  const transformParams: TransformParams = {
-    width: queryParams.width,
-    height: queryParams.height,
-    format: queryParams.format,
-    fit: queryParams.fit as any,
-    quality: queryParams.quality,
-  }
+  const transformParams = c.req.valid('query')
 
   const db = c.get('db')
   const storageService = c.get('storage')
@@ -101,35 +125,10 @@ export const serveFile: AppRouteHandler<ServeFileRoute> = async (c) => {
       throw notFound('File content')
     }
 
-    // Check if any transformations were requested
-    const hasTransforms = Boolean(
-      transformParams.width ||
-        transformParams.height ||
-        transformParams.format ||
-        transformParams.fit ||
-        transformParams.quality,
-    )
-
     // If transformations are requested and it's an image, transform it
-    if (
-      hasTransforms &&
-      fileRecord.contentType.startsWith('image/') &&
-      fileRecord.contentType !== 'image/svg+xml'
-    ) {
-      // Let the image service handle the transformation
-      const { transformedImage, contentType } = await imageService.transformWithFormat(
-        r2Object.body,
-        transformParams,
-      )
-
-      // Return the transformed image with appropriate headers
-      return new Response(transformedImage, {
-        headers: {
-          'Content-Type': contentType,
-          'Cache-Control': 'public, max-age=31536000',
-          'Content-Disposition': 'inline',
-        },
-      })
+    if (hasTransforms(transformParams) && isTransformableImage(fileRecord)) {
+      const transformedImage = await imageService.transform(r2Object.body, transformParams)
+      return transformedImage.response()
     }
 
     // If no transformations or not an image, return the original file
@@ -137,7 +136,6 @@ export const serveFile: AppRouteHandler<ServeFileRoute> = async (c) => {
       headers: {
         'Content-Type': fileRecord.contentType,
         'Cache-Control': 'public, max-age=31536000',
-        'Content-Disposition': 'inline',
       },
     })
   } catch (error) {
@@ -156,4 +154,12 @@ export const serveFile: AppRouteHandler<ServeFileRoute> = async (c) => {
     // Default to 500 for server errors
     return c.json({ error: 'Failed to serve file', status: 500 }, 500)
   }
+}
+
+function hasTransforms(params: ImageTransformParams) {
+  return Object.values(params).some((value) => value !== undefined)
+}
+
+function isTransformableImage(fileRecord: FileMetadata) {
+  return fileRecord.contentType.startsWith('image/') && fileRecord.contentType !== 'image/svg+xml'
 }
