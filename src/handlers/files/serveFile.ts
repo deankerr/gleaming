@@ -70,7 +70,7 @@ export interface TransformParams {
  * Handler for serving a file by its slug
  */
 export const serveFile: AppRouteHandler<ServeFileRoute> = async (c) => {
-  const { slug } = c.req.valid('param')
+  const { externalId } = c.req.valid('param')
   const queryParams = c.req.query()
 
   // Extract transformation parameters
@@ -88,13 +88,13 @@ export const serveFile: AppRouteHandler<ServeFileRoute> = async (c) => {
 
   try {
     // Find file record with this slug
-    const fileRecord = await db.getFileBySlug(slug)
+    const fileRecord = await db.getFileByExternalId(externalId)
     if (!fileRecord) {
       throw notFound('File')
     }
 
     // Get the file from storage
-    const r2Object = await storageService.getFile(fileRecord.id)
+    const r2Object = await storageService.getFile(fileRecord.objectId)
     if (!r2Object) {
       throw notFound('File content')
     }

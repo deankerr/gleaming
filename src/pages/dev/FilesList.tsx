@@ -1,5 +1,5 @@
 import { FC } from 'hono/jsx'
-import type { FileMetadata } from '../../types'
+import type { FileMetadata } from '../../db/schema'
 import { formatFileSize, formatDateRelative } from './utils'
 
 export interface FilesListProps {
@@ -116,15 +116,15 @@ export const FilesList: FC<FilesListProps> = ({ files }) => {
 
               return (
                 <tr>
-                  <td class="slug-cell">{file.slug}</td>
+                  <td class="slug-cell">{file.filename}</td>
                   <td class="content-type-cell">{contentType}</td>
                   <td class="size-cell">{formatFileSize(file.size)}</td>
                   <td class="date-cell">{formatDateRelative(file.createdAt)}</td>
                   <td class="action-cell">
-                    <a href={`/file/${file.slug}`} target="_blank" class="btn btn-primary">
+                    <a href={`/file/${file.externalId}`} target="_blank" class="btn btn-primary">
                       View
                     </a>
-                    <a href={`/api/info/${file.slug}`} target="_blank" class="btn">
+                    <a href={`/api/info/${file.externalId}`} target="_blank" class="btn">
                       Info
                     </a>
                   </td>

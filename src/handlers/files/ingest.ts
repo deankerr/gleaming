@@ -4,10 +4,7 @@ import { DEFAULT_USER_ID, DEFAULT_WORKSPACE_ID, VALID_IMAGE_TYPES } from '../../
 import type { IngestImageRoute } from '../../routes/api'
 import type { AppRouteHandler } from '../../types'
 import { AppError, badRequest, internalError } from '../../utils/errors'
-import { generateFileSlug } from '../../utils/id'
-
-// Blocklist of potentially dangerous domains (example)
-const BLOCKLISTED_DOMAINS: string[] = []
+import { generateExternalId } from '../../utils/id'
 
 // Maximum redirect count to prevent redirect loops
 const MAX_REDIRECTS = 5
@@ -31,9 +28,10 @@ function parseUrl(urlString: string): URL {
 /**
  * Verify if a URL is safe to fetch from
  * @param url The URL to verify
+ * @param blockedDomains Additional domains to block
  * @returns True if safe, throws otherwise
  */
-function verifyUrl(url: URL): boolean {
+function verifyUrl(url: URL, blockedDomains?: string[]): boolean {
   // Check protocol (only allow http and https)
   if (url.protocol !== 'http:' && url.protocol !== 'https:') {
     throw badRequest(`Unsupported URL protocol: ${url.protocol}`)
@@ -52,7 +50,7 @@ function verifyUrl(url: URL): boolean {
 
   // Check against blocklist
   const domain = url.hostname.toLowerCase()
-  if (BLOCKLISTED_DOMAINS.some((blocked) => domain.includes(blocked))) {
+  if (blockedDomains?.some((blocked) => domain.includes(blocked))) {
     throw badRequest('URL domain is not allowed')
   }
 
@@ -62,11 +60,17 @@ function verifyUrl(url: URL): boolean {
 /**
  * Safely fetch a resource with security considerations
  * @param urlString URL string to fetch
+ * @param blockedDomains Domains to block
  * @param method HTTP method
  * @param timeoutMs Timeout in milliseconds
  * @returns Response
  */
-async function safeFetch(urlString: string, method = 'GET', timeoutMs = FETCH_TIMEOUT): Promise<Response> {
+async function safeFetch(
+  urlString: string,
+  blockedDomains: string[],
+  method = 'GET',
+  timeoutMs = FETCH_TIMEOUT,
+): Promise<Response> {
   // Create an AbortController for timeout management
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
@@ -74,7 +78,7 @@ async function safeFetch(urlString: string, method = 'GET', timeoutMs = FETCH_TI
   try {
     // Parse and verify URL is safe to fetch from
     const url = parseUrl(urlString)
-    verifyUrl(url)
+    verifyUrl(url, blockedDomains)
 
     const response = await fetch(urlString, {
       method,
@@ -92,7 +96,7 @@ async function safeFetch(urlString: string, method = 'GET', timeoutMs = FETCH_TI
     // If there were redirects, verify the redirected URL is also safe
     if (response.redirected && response.url !== urlString) {
       const redirectedUrl = parseUrl(response.url)
-      verifyUrl(redirectedUrl)
+      verifyUrl(redirectedUrl, blockedDomains)
     }
 
     return response
@@ -106,7 +110,7 @@ async function safeFetch(urlString: string, method = 'GET', timeoutMs = FETCH_TI
  */
 export const ingestImage: AppRouteHandler<IngestImageRoute> = async (c) => {
   // Extract payload from request body
-  const { url, slug: suffix } = c.req.valid('json')
+  const { url, filename: filenameParam } = c.req.valid('json')
 
   const userId = DEFAULT_USER_ID
   const workspaceId = DEFAULT_WORKSPACE_ID
@@ -117,13 +121,10 @@ export const ingestImage: AppRouteHandler<IngestImageRoute> = async (c) => {
 
   try {
     // Fetch the actual image
-    const response = await safeFetch(url)
+    const response = await safeFetch(url, [new URL(c.req.url).hostname])
     if (!response.ok) {
       throw badRequest(`Failed to fetch image from URL: ${response.statusText}`)
     }
-
-    // Generate a unique ID for both storage and database
-    const id = ulid()
 
     // Only accept allowed image content types
     const contentType = response.headers.get('content-type')
@@ -131,24 +132,26 @@ export const ingestImage: AppRouteHandler<IngestImageRoute> = async (c) => {
       throw badRequest(`Unsupported content type: ${contentType}`)
     }
 
-    // Store file directly in R2 using the ID as the key
-    const r2Object = await storageService.storeFile(id, response.body, contentType)
+    // Generate a unique ID for both storage and database
+    const objectId = ulid()
+    const externalId = generateExternalId()
+    const filename = filenameParam || parseUrl(url).pathname.split('/').pop() || externalId
+
+    const r2Object = await storageService.storeFile(objectId, response.body, contentType)
     const md5 = r2Object.checksums.md5
     if (!md5) {
       throw internalError('Failed to store file')
     }
 
-    // Generate a user-friendly slug
-    const slug = generateFileSlug(suffix)
-
     // Create database record with the same ID
     const fileRecord = await db.createFile({
-      id,
-      contentHash: bytesToHex(new Uint8Array(md5)), // Use MD5 from R2 for deduplication potential
+      objectId,
+      externalId,
+      contentHash: bytesToHex(new Uint8Array(md5)),
       contentType,
-      size: r2Object.size, // Use the actual size from R2
+      size: r2Object.size,
       metadata: {},
-      slug,
+      filename,
       userId,
       workspaceId,
     })

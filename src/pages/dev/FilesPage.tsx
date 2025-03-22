@@ -1,7 +1,7 @@
 import { FC } from 'hono/jsx'
 import { FilesList } from './FilesList'
 import { Layout } from './Layout'
-import type { FileMetadata } from '../../types'
+import type { FileMetadata } from '../../db/schema'
 
 export interface FilesPageProps {
   files: FileMetadata[]

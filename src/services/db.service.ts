@@ -1,7 +1,6 @@
 import { desc, eq } from 'drizzle-orm'
-import { ulid } from 'ulidx'
 import { DB, initDB } from '../db'
-import { files, users, workspaces } from '../db/schema'
+import { files } from '../db/schema'
 
 /**
  * Database service for common operations
@@ -16,18 +15,18 @@ export class DBService {
   /**
    * Get a file by internal ID
    */
-  async getFileById(id: string) {
+  async getFileByObjectId(objectId: string) {
     return this.db.query.files.findFirst({
-      where: eq(files.id, id),
+      where: eq(files.objectId, objectId),
     })
   }
 
   /**
-   * Get a file by slug
+   * Get a file by external ID
    */
-  async getFileBySlug(slug: string) {
+  async getFileByExternalId(externalId: string) {
     return this.db.query.files.findFirst({
-      where: eq(files.slug, slug),
+      where: eq(files.externalId, externalId),
     })
   }
 
@@ -44,28 +43,30 @@ export class DBService {
    * Create a new file record
    */
   async createFile(data: {
-    id: string
+    objectId: string
+    externalId: string
     contentHash: string
     contentType: string
     size: number
     metadata?: Record<string, any>
-    slug: string
+    filename: string
     userId: string
     workspaceId: string
   }) {
     await this.db.insert(files).values({
-      id: data.id,
+      objectId: data.objectId,
+      externalId: data.externalId,
       contentHash: data.contentHash,
       contentType: data.contentType,
       size: data.size,
       metadata: data.metadata,
-      slug: data.slug,
+      filename: data.filename,
       userId: data.userId,
       workspaceId: data.workspaceId,
     })
 
     console.log('db:files:insert:', data)
-    return this.getFileById(data.id)
+    return this.getFileByObjectId(data.objectId)
   }
 
   /**
@@ -85,54 +86,5 @@ export class DBService {
     return this.db.query.files.findMany({
       where: eq(files.workspaceId, workspaceId),
     })
-  }
-
-  /**
-   * Get a workspace by ID
-   */
-  async getWorkspaceById(id: string) {
-    return this.db.query.workspaces.findFirst({
-      where: eq(workspaces.id, id),
-    })
-  }
-
-  /**
-   * Create a new workspace
-   */
-  async createWorkspace(data: { name: string; slug: string; userId: string }) {
-    const id = ulid()
-
-    await this.db.insert(workspaces).values({
-      id,
-      name: data.name,
-      slug: data.slug,
-      userId: data.userId,
-    })
-
-    return this.getWorkspaceById(id)
-  }
-
-  /**
-   * Get a user by ID
-   */
-  async getUserById(id: string) {
-    return this.db.query.users.findFirst({
-      where: eq(users.id, id),
-    })
-  }
-
-  /**
-   * Create a new user
-   */
-  async createUser(data: { name: string; email: string }) {
-    const id = ulid()
-
-    await this.db.insert(users).values({
-      id,
-      name: data.name,
-      email: data.email,
-    })
-
-    return this.getUserById(id)
   }
 }

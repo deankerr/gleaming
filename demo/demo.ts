@@ -22,9 +22,9 @@ const { values, positionals } = parseArgs({
       short: 'u',
       default: API_BASE_URL,
     },
-    slug: {
+    filename: {
       type: 'string',
-      short: 's',
+      short: 'f',
     },
     token: {
       type: 'string',
@@ -77,13 +77,13 @@ Commands:
 
 Options:
   -u, --url <url>              API base URL (default: ${API_BASE_URL})
-  -s, --slug <slug>            Custom slug to use for the file
+  -f, --filename <filename>    Custom filename to use for the file
   -t, --token <token>          API token for authentication (default: from env var API_TOKEN)
   --noauth                     Skip authentication (will demonstrate auth failure)
 
 Examples:
   bun run demo.ts upload demo_1.png
-  bun run demo.ts ingest https://example.com/image.jpg --slug my-example
+  bun run demo.ts ingest https://example.com/image.jpg --filename my-custom-name.jpg
   bun run demo.ts get abc123def456
   bun run demo.ts upload demo_1.png --url https://your-api.example.com/api
   bun run demo.ts upload demo_1.png --token your-api-token
@@ -115,11 +115,11 @@ function createHeaders(contentType?: string): HeadersInit {
 // Helper function to display file details
 function displayFileDetails(data: any) {
   console.log('Details:')
-  console.log(`- ID: ${data.id}`)
+  console.log(`- ID: ${data.externalId}`)
   console.log(`- Content Hash: ${data.contentHash}`)
   console.log(`- Size: ${formatBytes(data.size)}`)
   console.log(`- Content Type: ${data.contentType}`)
-  console.log(`- Slug: ${data.slug}`)
+  console.log(`- Filename: ${data.filename}`)
   console.log(`- Created At: ${new Date(data.createdAt).toLocaleString()}`)
 
   if (data.metadata) {
@@ -132,38 +132,41 @@ function displayFileDetails(data: any) {
     }
   }
 
-  console.log(`\nTo retrieve this file: bun run demo.ts get ${data.slug}`)
-  console.log(`\nOr visit ${API_BASE_URL}${PATH_SERVE}/${data.slug}`)
+  console.log(`\nTo retrieve this file: bun run demo.ts get ${data.externalId}`)
+  console.log(`\nOr visit ${API_BASE_URL}${PATH_SERVE}/${data.externalId}`)
 }
 
 // Upload a file
-async function uploadFile(filename?: string) {
-  if (!filename) {
-    console.error('Error: Missing filename')
+async function uploadFile(filepath?: string) {
+  if (!filepath) {
+    console.error('Error: Missing filepath')
     showHelp()
     process.exit(1)
   }
 
-  const filepath = join(import.meta.dirname, filename)
+  const fullPath = join(import.meta.dirname, filepath)
+  const originalFilename = basename(filepath)
 
   try {
     // Read the file
-    const fileBuffer = await readFile(filepath)
+    const fileBuffer = await readFile(fullPath)
 
     // Create form data
     const formData = new FormData()
-    const file = new File([fileBuffer], basename(filename), {
-      type: getContentType(filename),
+    const file = new File([fileBuffer], originalFilename, {
+      type: getContentType(originalFilename),
     })
 
     formData.append('file', file)
 
-    // Optional: Add a slug based on the filename without extension
-    const slug = values.slug || basename(filename)
-    formData.append('slug', slug)
+    // Use custom filename if provided, otherwise use the original filename
+    const customFilename = values.filename || originalFilename
+    formData.append('filename', customFilename)
 
-    console.log(`Uploading ${filename} (${formatBytes(fileBuffer.byteLength)})...`)
-    console.log(`Using custom slug: ${slug}`)
+    console.log(`Uploading ${originalFilename} (${formatBytes(fileBuffer.byteLength)})...`)
+    if (values.filename) {
+      console.log(`Using custom filename: ${customFilename}`)
+    }
 
     // Make the API request with authentication header
     const response = await fetch(`${values.url}${PATH_UPLOAD}`, {
@@ -187,7 +190,7 @@ async function uploadFile(filename?: string) {
     }
   } catch (error) {
     if (error instanceof Error && error.message.includes('ENOENT')) {
-      console.error(`Error: File "${filename}" not found in the demo directory`)
+      console.error(`Error: File "${originalFilename}" not found in the demo directory`)
     } else {
       throw error
     }
@@ -205,14 +208,14 @@ async function ingestImageUrl(url?: string) {
   try {
     console.log(`Ingesting image from URL: ${url}...`)
 
-    if (values.slug) {
-      console.log(`Using custom slug: ${values.slug}`)
+    if (values.filename) {
+      console.log(`Using custom filename: ${values.filename}`)
     }
 
     // Create request payload
     const payload = {
       url,
-      slug: values.slug,
+      filename: values.filename,
     }
 
     // Make the API request with authentication header

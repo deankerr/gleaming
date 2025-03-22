@@ -1,5 +1,5 @@
 import { FC } from 'hono/jsx'
-import type { FileMetadata } from '../../types'
+import type { FileMetadata } from '../../db/schema'
 import { formatFileSize, formatDateRelative } from './utils'
 
 export interface ImageGalleryProps {
@@ -133,10 +133,10 @@ export const ImageGallery: FC<ImageGalleryProps> = ({ images }) => {
             return (
               <div class="image-card">
                 <div class="thumbnail-container">
-                  <a href={`/file/${file.slug}`} target="_blank">
+                  <a href={`/file/${file.externalId}`} target="_blank">
                     <img
-                      src={`/file/${file.slug}?width=500&height=400&fit=cover`}
-                      alt={file.slug}
+                      src={`/file/${file.externalId}?width=500&height=400&fit=cover`}
+                      alt={file.filename}
                       class="thumbnail"
                       loading="lazy"
                     />
@@ -144,7 +144,7 @@ export const ImageGallery: FC<ImageGalleryProps> = ({ images }) => {
                   <span class="image-type-badge">{format}</span>
                 </div>
                 <div class="image-info">
-                  <p class="image-slug">{file.slug}</p>
+                  <p class="image-slug">{file.filename}</p>
                   <p class="content-type">{contentType}</p>
                   {hasDimensions && (
                     <p class="dimension-info">
@@ -156,14 +156,14 @@ export const ImageGallery: FC<ImageGalleryProps> = ({ images }) => {
                     <span>{formatDateRelative(file.createdAt)}</span>
                   </div>
                   <div class="btn-group">
-                    <a href={`/file/${file.slug}`} target="_blank" class="btn btn-primary">
+                    <a href={`/file/${file.externalId}`} target="_blank" class="btn btn-primary">
                       Original
                     </a>
-                    <a href={`/api/info/${file.slug}`} target="_blank" class="btn">
+                    <a href={`/api/info/${file.externalId}`} target="_blank" class="btn">
                       Info
                     </a>
                     <a
-                      href={`/file/${file.slug}?width=200&height=200&fit=contain&format=webp`}
+                      href={`/file/${file.externalId}?width=200&height=200&fit=contain&format=webp`}
                       target="_blank"
                       class="btn"
                     >

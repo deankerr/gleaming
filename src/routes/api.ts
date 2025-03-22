@@ -1,5 +1,5 @@
 import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi'
-import { getImageInfoBySlug } from '../handlers/files/info'
+import { getFileInfo } from '../handlers/files/info'
 import { ingestImage } from '../handlers/files/ingest'
 import { uploadImage } from '../handlers/files/upload'
 import type { AppEnv } from '../types'
@@ -15,16 +15,6 @@ const ErrorSchema = z
     }),
   })
   .openapi('Error')
-
-const FileParamsSchema = z.object({
-  slug: z.string().openapi({
-    param: {
-      name: 'slug',
-      in: 'path',
-    },
-    example: 'ltspei2xq-my-image',
-  }),
-})
 
 const ImageSchema = z
   .object({
@@ -68,9 +58,9 @@ const UploadImageSchema = z
       format: 'binary',
       description: 'Image file to upload',
     }),
-    slug: z.string().optional().openapi({
-      description: 'Optional user-defined slug (will be combined with a time-sortable ID)',
-      example: 'my-image',
+    filename: z.string().optional().openapi({
+      description: 'Optional user-defined filename',
+      example: 'my-image.jpg',
     }),
   })
   .openapi('UploadImage')
@@ -82,9 +72,9 @@ const IngestImageSchema = z
       example: 'https://example.com/source-image.jpg',
       description: 'URL of the image to ingest',
     }),
-    slug: z.string().optional().openapi({
-      description: 'Optional user-defined slug (will be combined with a time-sortable ID)',
-      example: 'my-image',
+    filename: z.string().optional().openapi({
+      description: 'Optional user-defined filename',
+      example: 'my-image.jpg',
     }),
   })
   .openapi('IngestImage')
@@ -146,7 +136,7 @@ const uploadImageRoute = createRoute({
   },
 })
 
-// 1b. Ingest a new image from URL (experimental)
+// 1b. Ingest a new image from URL
 const ingestImageRoute = createRoute({
   method: 'post',
   path: '/ingest',
@@ -191,13 +181,23 @@ const ingestImageRoute = createRoute({
   },
 })
 
+const FileParamsSchema = z.object({
+  externalId: z.string().openapi({
+    param: {
+      name: 'externalId',
+      in: 'path',
+    },
+    example: 'abcdef123456',
+  }),
+})
+
 // 2. Get file info by slug
-const getFileInfo = createRoute({
+const getFileInfoRoute = createRoute({
   method: 'get',
-  path: '/info/{slug}',
+  path: '/info/{externalId}',
   tags: ['Files'],
-  summary: 'Get file info by slug',
-  description: 'Retrieve file information by its unique slug',
+  summary: 'Get file info by external ID',
+  description: 'Retrieve file information by its unique external ID',
   request: {
     params: FileParamsSchema,
   },
@@ -235,10 +235,10 @@ const apiRouter = new OpenAPIHono<AppEnv>()
 // Register routes
 apiRouter.openapi(uploadImageRoute, uploadImage)
 apiRouter.openapi(ingestImageRoute, ingestImage)
-apiRouter.openapi(getFileInfo, getImageInfoBySlug)
+apiRouter.openapi(getFileInfoRoute, getFileInfo)
 
 export { apiRouter }
 
 export type UploadImageRoute = typeof uploadImageRoute
 export type IngestImageRoute = typeof ingestImageRoute
-export type GetImageBySlugRoute = typeof getFileInfo
+export type GetFileInfoRoute = typeof getFileInfoRoute

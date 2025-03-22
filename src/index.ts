@@ -53,7 +53,7 @@ app.doc('/doc', {
     version: '1.0.0',
     title: 'Gleaming API',
     description:
-      'API for the Gleaming image hosting service. Protected with Bearer auth - include your API token in the Authorization header.',
+      'API for the Gleaming. Protected with Bearer auth - include your API token in the Authorization header.',
   },
 })
 

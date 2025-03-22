@@ -15,21 +15,21 @@ const ErrorSchema = z
   .openapi('Error')
 
 const FileParamsSchema = z.object({
-  slug: z.string().openapi({
+  externalId: z.string().openapi({
     param: {
-      name: 'slug',
+      name: 'externalId',
       in: 'path',
     },
-    example: 'ltspei2xq-my-image',
+    example: 'abcdef123456',
   }),
 })
 
 const serveFileRoute = createRoute({
   method: 'get',
-  path: '/{slug}',
+  path: '/{externalId}',
   tags: ['Files'],
-  summary: 'Serve file by slug',
-  description: 'Serve a file by its unique slug with optional transformations for images',
+  summary: 'Serve file by external ID',
+  description: 'Serve a file by its unique external ID with optional transformations for images',
   request: {
     params: FileParamsSchema,
     query: ImageTransformParamsSchema,

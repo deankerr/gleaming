@@ -97,9 +97,9 @@ export const UploadForm: FC = () => {
               <input type="file" id="file" name="file" accept="image/*" required />
             </div>
             <div class="form-group">
-              <label for="slug">Custom Slug (Optional)</label>
-              <input type="text" id="slug" name="slug" placeholder="my-awesome-image" />
-              <div class="note">A unique identifier will be prepended to your slug</div>
+              <label for="filename">Custom Filename (Optional)</label>
+              <input type="text" id="filename" name="filename" placeholder="my-awesome-image" />
+              <div class="note">A unique identifier will be prepended to your filename</div>
             </div>
             <div class="form-group auth-field">
               <label for="api-token">API Token</label>
@@ -118,7 +118,7 @@ export const UploadForm: FC = () => {
               event.preventDefault();
               
               const fileInput = document.getElementById('file');
-              const slug = document.getElementById('slug').value;
+              const filename = document.getElementById('filename').value;
               const token = document.getElementById('api-token').value;
               
               if (!fileInput.files || fileInput.files.length === 0) {
@@ -128,8 +128,8 @@ export const UploadForm: FC = () => {
               
               const formData = new FormData();
               formData.append('file', fileInput.files[0]);
-              if (slug) {
-                formData.append('slug', slug);
+              if (filename) {
+                formData.append('filename', filename);
               }
               
               // Create headers with authentication
@@ -171,9 +171,9 @@ export const UploadForm: FC = () => {
               <input type="text" id="url" name="url" placeholder="https://example.com/image.jpg" required />
             </div>
             <div class="form-group">
-              <label for="url-slug">Custom Slug (Optional)</label>
-              <input type="text" id="url-slug" name="slug" placeholder="my-awesome-image" />
-              <div class="note">A unique identifier will be prepended to your slug</div>
+              <label for="filename">Custom Filename (Optional)</label>
+              <input type="text" id="filename" name="filename" placeholder="my-awesome-image" />
+              <div class="note">A unique identifier will be prepended to your filename</div>
             </div>
             <div class="form-group auth-field">
               <label for="ingest-api-token">API Token</label>
@@ -192,13 +192,13 @@ export const UploadForm: FC = () => {
               event.preventDefault();
               
               const url = document.getElementById('url').value;
-              const slug = document.getElementById('url-slug').value;
+              const filename = document.getElementById('filename').value;
               const token = document.getElementById('ingest-api-token').value;
               
               // Create the JSON payload
               const payload = { url: url };
-              if (slug) {
-                payload.slug = slug;
+              if (filename) {
+                payload.filename = filename;
               }
               
               // Create headers with authentication

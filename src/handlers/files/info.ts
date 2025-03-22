@@ -1,17 +1,17 @@
-import type { GetImageBySlugRoute } from '../../routes/api'
+import type { GetFileInfoRoute } from '../../routes/api'
 import type { AppRouteHandler } from '../../types'
 import { AppError, notFound } from '../../utils/errors'
 
 /**
  * Handler for getting an image by its slug
  */
-export const getImageInfoBySlug: AppRouteHandler<GetImageBySlugRoute> = async (c) => {
-  const { slug } = c.req.valid('param')
+export const getFileInfo: AppRouteHandler<GetFileInfoRoute> = async (c) => {
+  const { externalId } = c.req.valid('param')
   const db = c.get('db')
 
   try {
     // Find file record with this slug
-    const file = await db.getFileBySlug(slug)
+    const file = await db.getFileByExternalId(externalId)
 
     if (!file) {
       throw notFound('File')
