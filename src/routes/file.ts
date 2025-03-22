@@ -22,11 +22,22 @@ const FileParamsSchema = z.object({
     },
     example: 'abcdef123456',
   }),
+  // Optional second level path parameter that can be used for future extensions
+  subpath: z
+    .string()
+    .optional()
+    .openapi({
+      param: {
+        name: 'subpath',
+        in: 'path',
+      },
+      example: 'preview',
+    }),
 })
 
 const serveFileRoute = createRoute({
   method: 'get',
-  path: '/{externalId}',
+  path: '/{externalId}/{subpath?}',
   tags: ['Files'],
   summary: 'Serve file by external ID',
   description: 'Serve a file by its unique external ID with optional transformations for images',

@@ -1,8 +1,8 @@
 import { customAlphabet } from 'nanoid'
 
-const ALPHABET = '0123456789bcdefghjklmnpqrstvwxyz'
+const ALPHABET = '0123456789bcdfghjklmnpqrstvwxyz'
 const nanoid = customAlphabet(ALPHABET)
 
 export function generateExternalId() {
-  return nanoid(8)
+  return nanoid(10)
 }

@@ -18,10 +18,6 @@
     }
   ],
 
-  "images": {
-    "binding": "IMAGES"
-  },
-
   "d1_databases": [
     {
       "binding": "DB",
@@ -31,13 +27,16 @@
     }
   ],
 
+  "images": {
+    "binding": "IMAGES"
+  },
+
   /**
    * Environment Variables
    * https://developers.cloudflare.com/workers/wrangler/configuration/#environment-variables
    */
   "vars": {
-    "ENVIRONMENT": "development",
-    "API_TOKEN": ""
+    "ENVIRONMENT": "development"
   },
 
   /**

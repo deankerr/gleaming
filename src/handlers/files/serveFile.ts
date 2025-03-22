@@ -70,7 +70,9 @@ export interface TransformParams {
  * Handler for serving a file by its slug
  */
 export const serveFile: AppRouteHandler<ServeFileRoute> = async (c) => {
-  const { externalId } = c.req.valid('param')
+  const param = c.req.valid('param')
+  // Extract just the base externalId without extension and ignoring subpath
+  const externalId = param.externalId.split('.')[0] // remove extension
   const queryParams = c.req.query()
 
   // Extract transformation parameters
