@@ -137,7 +137,26 @@ export const ingestImage: AppRouteHandler<IngestImageRoute> = async (c) => {
     const externalId = generateExternalId()
     const filename = filenameParam || parseUrl(url).pathname.split('/').pop() || externalId
 
-    const r2Object = await storageService.storeFile(objectId, response.body, contentType)
+    // Fix for streams without known length (like SVGs from dynamic services)
+    // Read the entire response into an ArrayBuffer first
+    if (!response.body) {
+      throw internalError('Response body is empty')
+    }
+
+    let fileContent: ArrayBuffer | ReadableStream = response.body
+
+    // Check if content-length header is missing or if we're dealing with SVG
+    // This ensures we have a known length for R2 storage
+    if (!response.headers.has('content-length')) {
+      try {
+        fileContent = await response.arrayBuffer()
+      } catch (error) {
+        console.error('Error converting response to ArrayBuffer:', error)
+        throw internalError('Failed to process image data')
+      }
+    }
+
+    const r2Object = await storageService.storeFile(objectId, fileContent, contentType)
     const md5 = r2Object.checksums.md5
     if (!md5) {
       throw internalError('Failed to store file')
