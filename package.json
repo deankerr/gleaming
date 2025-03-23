@@ -13,6 +13,7 @@
   "dependencies": {
     "@hono/zod-openapi": "^0.19.2",
     "@noble/hashes": "^1.7.1",
+    "@scalar/hono-api-reference": "^0.7.2",
     "drizzle-orm": "^0.41.0",
     "hono": "^4.7.5",
     "nanoid": "^5.1.5",

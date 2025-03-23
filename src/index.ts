@@ -1,4 +1,5 @@
 import { OpenAPIHono } from '@hono/zod-openapi'
+import { apiReference } from '@scalar/hono-api-reference'
 import { showRoutes } from 'hono/dev'
 import { HTTPException } from 'hono/http-exception'
 import { logger } from 'hono/logger'
@@ -37,7 +38,7 @@ app.use('*', async (c, next) => {
 app.use('*', logger())
 app.use('*', secureHeaders())
 app.use('*', prettyJSON())
-app.use('*', serveEmojiFavicon('🤩'))
+app.use('*', serveEmojiFavicon('🤩', '🌌'))
 
 app.use('/api/*', apiAuth())
 app.route('/api', apiRouter)
@@ -56,6 +57,19 @@ app.doc('/doc', {
       'API for the Gleaming. Protected with Bearer auth - include your API token in the Authorization header.',
   },
 })
+
+app.get(
+  '/reference',
+  apiReference({
+    theme: 'kepler',
+    layout: 'classic',
+    defaultHttpClient: {
+      targetKey: 'js',
+      clientKey: 'fetch',
+    },
+    url: '/doc',
+  }),
+)
 
 // Global error handler
 app.onError((err, c) => {
