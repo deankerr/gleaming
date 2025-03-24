@@ -19,7 +19,8 @@ export const getFileInfo: AppRouteHandler<GetFileInfoRoute> = async (c) => {
 
     // Return the file metadata
     return c.json(file, 200)
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error retrieving image:', error)
 
     if (error instanceof AppError) {

@@ -1,5 +1,6 @@
+import type { DB } from '../db'
 import { desc, eq } from 'drizzle-orm'
-import { DB, initDB } from '../db'
+import { initDB } from '../db'
 import { files } from '../db/schema'
 
 /**

@@ -1,10 +1,10 @@
-import { FC } from 'hono/jsx'
+import type { FC } from 'hono/jsx'
 
 export interface NavigationProps {
   currentPath: string
 }
 
-export const Navigation: FC<NavigationProps> = ({ currentPath }) => {
+export const Navigation: FC<NavigationProps> = async ({ currentPath }) => {
   const links = [
     { href: '/dev/upload', label: 'Upload Images' },
     { href: '/dev/gallery', label: 'Image Gallery' },
@@ -13,7 +13,8 @@ export const Navigation: FC<NavigationProps> = ({ currentPath }) => {
 
   return (
     <nav>
-      <style>{`
+      <style>
+        {`
         .nav-container {
           display: flex;
           gap: 16px;
@@ -42,10 +43,11 @@ export const Navigation: FC<NavigationProps> = ({ currentPath }) => {
         .nav-link.active:hover {
           background-color: #0055aa;
         }
-      `}</style>
+      `}
+      </style>
 
       <div class="nav-container">
-        {links.map((link) => (
+        {links.map(async link => (
           <a href={link.href} class={`nav-link ${currentPath === link.href ? 'active' : ''}`}>
             {link.label}
           </a>

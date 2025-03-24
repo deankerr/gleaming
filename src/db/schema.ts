@@ -30,7 +30,7 @@ export const files = sqliteTable(
       .notNull(),
     deletedAt: text('deleted_at'),
   },
-  (table) => [index('external_id_idx').on(table.externalId), index('content_hash_idx').on(table.contentHash)],
+  table => [index('external_id_idx').on(table.externalId), index('content_hash_idx').on(table.contentHash)],
 )
 
 export type FileMetadata = typeof files.$inferSelect

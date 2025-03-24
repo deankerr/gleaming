@@ -1,15 +1,16 @@
-import { FC } from 'hono/jsx'
-import { type FileMetadata } from '../../db/schema'
-import { formatFileSize, formatDateRelative } from './utils'
+import type { FC } from 'hono/jsx'
+import type { FileMetadata } from '../../db/schema'
+import { formatDateRelative, formatFileSize } from './utils'
 
 export interface FilesListProps {
   files: FileMetadata[]
 }
 
-export const FilesList: FC<FilesListProps> = ({ files }) => {
+export const FilesList: FC<FilesListProps> = async ({ files }) => {
   return (
     <>
-      <style>{`
+      <style>
+        {`
         .files-table {
           width: 100%;
           border-collapse: collapse;
@@ -87,53 +88,64 @@ export const FilesList: FC<FilesListProps> = ({ files }) => {
           border-radius: 12px;
           color: #666;
         }
-      `}</style>
+      `}
+      </style>
 
-      {files.length === 0 ? (
-        <div class="empty-state">
-          <p>No files have been uploaded yet</p>
-          <p>
-            Use the API to upload files at <code>/upload</code> or <code>/ingest</code>
-          </p>
-        </div>
-      ) : (
-        <table class="files-table">
-          <thead>
-            <tr>
-              <th>Slug</th>
-              <th>Content Type</th>
-              <th>Size</th>
-              <th>Created</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {files.map((file) => {
-              // Normalize content type
-              const contentType = file.contentType.includes('/')
-                ? file.contentType
-                : `image/${file.contentType}`
+      {
+        files.length === 0
+          ? (
+              <div class="empty-state">
+                <p>No files have been uploaded yet</p>
+                <p>
+                  Use the API to upload files at
+                  {' '}
+                  <code>/upload</code>
+                  {' '}
+                  or
+                  {' '}
+                  <code>/ingest</code>
+                </p>
+              </div>
+            )
+          : (
+              <table class="files-table">
+                <thead>
+                  <tr>
+                    <th>Slug</th>
+                    <th>Content Type</th>
+                    <th>Size</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {files.map(async (file) => {
+                  // Normalize content type
+                    const contentType = file.contentType.includes('/')
+                      ? file.contentType
+                      : `image/${file.contentType}`
 
-              return (
-                <tr>
-                  <td class="slug-cell">{file.filename}</td>
-                  <td class="content-type-cell">{contentType}</td>
-                  <td class="size-cell">{formatFileSize(file.size)}</td>
-                  <td class="date-cell">{formatDateRelative(file.createdAt)}</td>
-                  <td class="action-cell">
-                    <a href={`/file/${file.externalId}`} target="_blank" class="btn btn-primary">
-                      View
-                    </a>
-                    <a href={`/api/info/${file.externalId}`} target="_blank" class="btn">
-                      Info
-                    </a>
-                  </td>
-                </tr>
-              )
-            })}
-          </tbody>
-        </table>
-      )}
+                    return (
+                      <tr>
+                        <td class="slug-cell">{file.filename}</td>
+                        <td class="content-type-cell">{contentType}</td>
+                        <td class="size-cell">{formatFileSize(file.size)}</td>
+                        <td class="date-cell">{formatDateRelative(file.createdAt)}</td>
+                        <td class="action-cell">
+                          <a href={`/file/${file.externalId}`} target="_blank" class="btn btn-primary">
+                            View
+                          </a>
+                          <a href={`/api/info/${file.externalId}`} target="_blank" class="btn">
+                            Info
+                          </a>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            )
+      }
     </>
   )
 }

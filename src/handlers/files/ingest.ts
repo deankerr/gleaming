@@ -1,8 +1,8 @@
+import type { IngestImageRoute } from '../../routes/api'
+import type { AppRouteHandler } from '../../types'
 import { bytesToHex } from '@noble/hashes/utils'
 import { ulid } from 'ulidx'
 import { DEFAULT_USER_ID, DEFAULT_WORKSPACE_ID, VALID_IMAGE_TYPES } from '../../constants'
-import type { IngestImageRoute } from '../../routes/api'
-import type { AppRouteHandler } from '../../types'
 import { AppError, badRequest, internalError } from '../../utils/errors'
 import { generateExternalId } from '../../utils/id'
 
@@ -20,7 +20,9 @@ const FETCH_TIMEOUT = 15000
 function parseUrl(urlString: string): URL {
   try {
     return new URL(urlString)
-  } catch (error) {
+  }
+  catch (error) {
+    console.error('Error parsing URL:', error)
     throw badRequest('Invalid URL format')
   }
 }
@@ -31,7 +33,7 @@ function parseUrl(urlString: string): URL {
  * @param blockedDomains Additional domains to block
  * @returns True if safe, throws otherwise
  */
-function verifyUrl(url: URL, blockedDomains?: string[]): boolean {
+function verifyUrl(url: URL, blockedDomains: string[] = []): boolean {
   // Check protocol (only allow http and https)
   if (url.protocol !== 'http:' && url.protocol !== 'https:') {
     throw badRequest(`Unsupported URL protocol: ${url.protocol}`)
@@ -39,18 +41,18 @@ function verifyUrl(url: URL, blockedDomains?: string[]): boolean {
 
   // Block localhost and private IPs
   if (
-    url.hostname === 'localhost' ||
-    url.hostname === '127.0.0.1' ||
-    url.hostname.startsWith('192.168.') ||
-    url.hostname.startsWith('10.') ||
-    url.hostname.startsWith('172.16.')
+    url.hostname === 'localhost'
+    || url.hostname === '127.0.0.1'
+    || url.hostname.startsWith('192.168.')
+    || url.hostname.startsWith('10.')
+    || url.hostname.startsWith('172.16.')
   ) {
     throw badRequest('Internal/private URLs are not allowed')
   }
 
   // Check against blocklist
   const domain = url.hostname.toLowerCase()
-  if (blockedDomains?.some((blocked) => domain.includes(blocked))) {
+  if (blockedDomains?.some(blocked => domain.includes(blocked))) {
     throw badRequest('URL domain is not allowed')
   }
 
@@ -100,7 +102,8 @@ async function safeFetch(
     }
 
     return response
-  } finally {
+  }
+  finally {
     clearTimeout(timeoutId)
   }
 }
@@ -150,7 +153,8 @@ export const ingestImage: AppRouteHandler<IngestImageRoute> = async (c) => {
     if (!response.headers.has('content-length')) {
       try {
         fileContent = await response.arrayBuffer()
-      } catch (error) {
+      }
+      catch (error) {
         console.error('Error converting response to ArrayBuffer:', error)
         throw internalError('Failed to process image data')
       }
@@ -187,13 +191,14 @@ export const ingestImage: AppRouteHandler<IngestImageRoute> = async (c) => {
 
     // Return the created file
     return c.json(fileRecord, 201)
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error ingesting image from URL:', error)
 
     // Handle AppError instances
     if (error instanceof AppError) {
       const status = error.status === 404 || error.status === 415 ? 400 : error.status
-      return c.json({ error: error.message, status }, status as 400 | 500)
+      return c.json({ error: error.message, status }, status)
     }
 
     // Default to 500 for server errors

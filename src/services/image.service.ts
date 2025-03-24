@@ -7,7 +7,7 @@ export interface ImageInfoMetadata {
   fileSize?: number
 }
 
-type ImageValidationResult = { success: true; data: ImageInfoMetadata } | { success: false; error: string }
+type ImageValidationResult = { success: true, data: ImageInfoMetadata } | { success: false, error: string }
 
 /**
  * Service for image validation and processing
@@ -30,7 +30,8 @@ export class ImageService {
       const data = await this.images.info(stream)
       // NOTE: image/svg+xml will not include width/height or fileSize
       return { success: true, data: data as ImageInfoMetadata }
-    } catch (err) {
+    }
+    catch (err) {
       if (err instanceof Error) {
         if ('code' in err && typeof err.code === 'number' && err.code === 9412) {
           return { success: false, error: 'Not a valid image format' }
@@ -42,7 +43,7 @@ export class ImageService {
 
   async transform(stream: ReadableStream<Uint8Array>, options: ImageTransformParams) {
     const { format, quality, ...transforms } = options
-    return await this.images
+    return this.images
       .input(stream)
       .transform(transforms)
       .output({ format: getOutputFormat(format), quality })
@@ -62,6 +63,7 @@ function getOutputFormat(
       return 'image/png'
     case 'avif':
       return 'image/avif'
+    case undefined:
     default:
       return 'image/webp'
   }

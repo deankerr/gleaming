@@ -1,4 +1,4 @@
-import { FC } from 'hono/jsx'
+import type { FC } from 'hono/jsx'
 import { html } from 'hono/html'
 import { Navigation } from './Navigation'
 
@@ -10,7 +10,7 @@ export interface LayoutProps {
   currentPath: string
 }
 
-export const Layout: FC<LayoutProps> = ({ title, description, count, children, currentPath }) => {
+export const Layout: FC<LayoutProps> = async ({ title, description, count, children, currentPath }) => {
   return html`
     <!DOCTYPE html>
     <html lang="en">

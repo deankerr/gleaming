@@ -1,3 +1,4 @@
+import type { AppEnv } from './types'
 import { OpenAPIHono } from '@hono/zod-openapi'
 import { apiReference } from '@scalar/hono-api-reference'
 import { showRoutes } from 'hono/dev'
@@ -13,7 +14,6 @@ import { fileRouter } from './routes/file'
 import { DBService } from './services/db.service'
 import { ImageService } from './services/image.service'
 import { StorageService } from './services/storage.service'
-import type { AppEnv } from './types'
 
 const app = new OpenAPIHono<AppEnv>({
   strict: false, // allow trailing slashes

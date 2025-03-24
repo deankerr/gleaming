@@ -1,14 +1,14 @@
-import { z } from '@hono/zod-openapi'
+import type { FileMetadata } from '../../db/schema'
 import type { ServeFileRoute } from '../../routes/file'
 import type { AppRouteHandler } from '../../types'
+import { z } from '@hono/zod-openapi'
 import { AppError, notFound } from '../../utils/errors'
-import type { FileMetadata } from '../../db/schema'
 
 // Define the supported transformations
 export const ImageTransformParamsSchema = z.object({
   anim: z
     .enum(['true', 'false'])
-    .transform((val) => val === 'true')
+    .transform(val => val === 'true')
     .optional()
     .openapi({
       param: {
@@ -19,7 +19,7 @@ export const ImageTransformParamsSchema = z.object({
     }),
   width: z
     .string()
-    .transform((val) => parseInt(val, 10))
+    .transform(val => Number.parseInt(val, 10))
     .pipe(z.number().int().positive())
     .optional()
     .openapi({
@@ -31,7 +31,7 @@ export const ImageTransformParamsSchema = z.object({
     }),
   height: z
     .string()
-    .transform((val) => parseInt(val, 10))
+    .transform(val => Number.parseInt(val, 10))
     .pipe(z.number().int().positive())
     .optional()
     .openapi({
@@ -63,7 +63,7 @@ export const ImageTransformParamsSchema = z.object({
     }),
   quality: z
     .string()
-    .transform((val) => parseInt(val, 10))
+    .transform(val => Number.parseInt(val, 10))
     .pipe(z.number().int().positive())
     .optional()
     .openapi({
@@ -85,7 +85,7 @@ export const ImageTransformParamsSchema = z.object({
     }),
   rotate: z
     .enum(['90', '180', '270'])
-    .transform((val) => parseInt(val, 10))
+    .transform(val => Number.parseInt(val, 10))
     .pipe(z.number().int().positive())
     .optional()
     .openapi({
@@ -138,7 +138,8 @@ export const serveFile: AppRouteHandler<ServeFileRoute> = async (c) => {
         'Cache-Control': 'public, max-age=31536000',
       },
     })
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error serving file:', error)
 
     if (error instanceof AppError) {
@@ -157,7 +158,7 @@ export const serveFile: AppRouteHandler<ServeFileRoute> = async (c) => {
 }
 
 function hasTransforms(params: ImageTransformParams) {
-  return Object.values(params).some((value) => value !== undefined)
+  return Object.values(params).some(value => value !== undefined)
 }
 
 function isTransformableImage(fileRecord: FileMetadata) {

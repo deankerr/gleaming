@@ -1,7 +1,7 @@
 import type { MiddlewareHandler } from 'hono'
 import type { AppEnv } from '../types'
 
-export const serveEmojiFavicon = (emoji: string, devEmoji: string): MiddlewareHandler<AppEnv> => {
+export function serveEmojiFavicon(emoji: string, devEmoji: string): MiddlewareHandler<AppEnv> {
   return async (c, next) => {
     const isDev = c.env.ENVIRONMENT === 'development'
 

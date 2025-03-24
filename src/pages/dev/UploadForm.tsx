@@ -1,9 +1,10 @@
-import { FC } from 'hono/jsx'
+import type { FC } from 'hono/jsx'
 
-export const UploadForm: FC = () => {
+export const UploadForm: FC = async () => {
   return (
     <div>
-      <style>{`
+      <style>
+        {`
         .forms-container {
           display: flex;
           gap: 24px;
@@ -85,7 +86,8 @@ export const UploadForm: FC = () => {
           padding-top: 20px;
           border-top: 1px dashed #eee;
         }
-      `}</style>
+      `}
+      </style>
 
       <div class="forms-container">
         {/* File Upload Form */}
@@ -159,7 +161,8 @@ export const UploadForm: FC = () => {
             }
           `,
             }}
-          ></script>
+          >
+          </script>
         </div>
 
         {/* URL Ingestion Form */}
@@ -230,7 +233,8 @@ export const UploadForm: FC = () => {
             }
           `,
             }}
-          ></script>
+          >
+          </script>
         </div>
       </div>
     </div>

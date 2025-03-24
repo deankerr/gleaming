@@ -1,10 +1,10 @@
-import { ulid } from 'ulidx'
-import { DEFAULT_USER_ID, DEFAULT_WORKSPACE_ID } from '../../constants'
 import type { UploadImageRoute } from '../../routes/api'
 import type { AppRouteHandler } from '../../types'
+import { bytesToHex } from '@noble/hashes/utils'
+import { ulid } from 'ulidx'
+import { DEFAULT_USER_ID, DEFAULT_WORKSPACE_ID } from '../../constants'
 import { AppError, badRequest } from '../../utils/errors'
 import { generateExternalId } from '../../utils/id'
-import { bytesToHex } from '@noble/hashes/utils'
 
 /**
  * Handler for uploading an image directly from the client
@@ -62,13 +62,14 @@ export const uploadImage: AppRouteHandler<UploadImageRoute> = async (c) => {
     })
 
     return c.json(fileRecord, 201)
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error uploading file:', error)
 
     // Handle AppError instances
     if (error instanceof AppError) {
       const status = error.status === 404 || error.status === 415 ? 400 : error.status
-      return c.json({ error: error.message, status }, status as 400 | 500)
+      return c.json({ error: error.message, status }, status)
     }
 
     // Default to 500 for server errors

@@ -1,13 +1,13 @@
-import { FC } from 'hono/jsx'
+import type { FC } from 'hono/jsx'
+import type { FileMetadata } from '../../db/schema'
 import { FilesList } from './FilesList'
 import { Layout } from './Layout'
-import type { FileMetadata } from '../../db/schema'
 
 export interface FilesPageProps {
   files: FileMetadata[]
 }
 
-export const FilesPage: FC<FilesPageProps> = ({ files }) => {
+export const FilesPage: FC<FilesPageProps> = async ({ files }) => {
   return (
     <Layout
       title="Files List"

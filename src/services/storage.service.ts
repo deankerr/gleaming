@@ -1,6 +1,6 @@
 import { internalError } from '../utils/errors'
 
-type KeyParts = {
+interface KeyParts {
   userId: string
   projectId: string
   objectId: string
@@ -51,12 +51,11 @@ export class StorageService {
       }
 
       const result = await this.bucket.put(key, value, mergedOptions)
-      if (!result) {
-        throw new Error('Failed to store file')
-      }
+
       console.log('storage:put:', key, result)
       return result
-    } catch (error) {
+    }
+    catch (error) {
       console.error('Failed to store file in R2:', error)
       throw internalError('Failed to store file')
     }
@@ -71,7 +70,8 @@ export class StorageService {
     try {
       const key = this.generateKey(keyParts)
       return await this.bucket.get(key)
-    } catch (error) {
+    }
+    catch (error) {
       console.error('Failed to get file from R2:', error)
       throw internalError('Failed to retrieve file')
     }
@@ -87,7 +87,8 @@ export class StorageService {
       const key = this.generateKey(keyParts)
       const headObject = await this.bucket.head(key)
       return headObject !== null
-    } catch (error) {
+    }
+    catch (error) {
       console.error('Failed to check if file exists in R2:', error)
       return false
     }
@@ -103,7 +104,8 @@ export class StorageService {
       const key = this.generateKey(keyParts)
       await this.bucket.delete(key)
       return true
-    } catch (error) {
+    }
+    catch (error) {
       console.error('Failed to delete file from R2:', error)
       return false
     }
@@ -123,7 +125,8 @@ export class StorageService {
         prefix,
         ...options,
       })
-    } catch (error) {
+    }
+    catch (error) {
       console.error('Failed to list files from R2:', error)
       throw internalError('Failed to list files')
     }

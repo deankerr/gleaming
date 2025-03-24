@@ -7,13 +7,16 @@
  */
 export function formatFileSize(bytes: number): string {
   if (bytes < 1024) {
-    return bytes + ' B'
-  } else if (bytes < 1024 * 1024) {
-    return (bytes / 1024).toFixed(1) + ' KB'
-  } else if (bytes < 1024 * 1024 * 1024) {
-    return (bytes / (1024 * 1024)).toFixed(1) + ' MB'
-  } else {
-    return (bytes / (1024 * 1024 * 1024)).toFixed(1) + ' GB'
+    return `${bytes} B`
+  }
+  else if (bytes < 1024 * 1024) {
+    return `${(bytes / 1024).toFixed(1)} KB`
+  }
+  else if (bytes < 1024 * 1024 * 1024) {
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+  }
+  else {
+    return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`
   }
 }
 
@@ -31,13 +34,17 @@ export function formatDateRelative(dateString: string): string {
 
   if (diffSecs < 60) {
     return 'just now'
-  } else if (diffMins < 60) {
+  }
+  else if (diffMins < 60) {
     return `${diffMins}m ago`
-  } else if (diffHours < 24) {
+  }
+  else if (diffHours < 24) {
     return `${diffHours}h ago`
-  } else if (diffDays < 30) {
+  }
+  else if (diffDays < 30) {
     return `${diffDays}d ago`
-  } else {
+  }
+  else {
     return date.toLocaleDateString()
   }
 }

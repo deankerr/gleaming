@@ -1,13 +1,13 @@
-import { FC } from 'hono/jsx'
+import type { FC } from 'hono/jsx'
+import type { FileMetadata } from '../../db/schema'
 import { ImageGallery } from './ImageGallery'
 import { Layout } from './Layout'
-import type { FileMetadata } from '../../db/schema'
 
 export interface GalleryPageProps {
   images: FileMetadata[]
 }
 
-export const GalleryPage: FC<GalleryPageProps> = ({ images }) => {
+export const GalleryPage: FC<GalleryPageProps> = async ({ images }) => {
   return (
     <Layout
       title="Image Gallery"

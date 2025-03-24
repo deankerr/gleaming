@@ -4,7 +4,7 @@ import type { ImageService } from './services/image.service'
 import type { StorageService } from './services/storage.service'
 
 // Define extended Hono environment with our services
-export type AppEnv = {
+export interface AppEnv {
   Bindings: CloudflareBindings // AMBIENT TYPE (worker-configuration.d.ts)
   Variables: {
     db: DBService

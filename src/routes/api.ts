@@ -1,8 +1,8 @@
+import type { AppEnv } from '../types'
 import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi'
 import { getFileInfo } from '../handlers/files/info'
 import { ingestImage } from '../handlers/files/ingest'
 import { uploadImage } from '../handlers/files/upload'
-import type { AppEnv } from '../types'
 
 // Define schemas
 const ErrorSchema = z
