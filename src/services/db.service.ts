@@ -51,7 +51,7 @@ export class DBService {
     metadata?: Record<string, any>
     filename: string
     userId: string
-    workspaceId: string
+    projectId: string
   }) {
     await this.db.insert(files).values({
       objectId: data.objectId,
@@ -62,7 +62,7 @@ export class DBService {
       metadata: data.metadata,
       filename: data.filename,
       userId: data.userId,
-      workspaceId: data.workspaceId,
+      projectId: data.projectId,
     })
 
     console.log('db:files:insert:', data)
@@ -82,9 +82,9 @@ export class DBService {
   /**
    * Get all files in a workspace
    */
-  async getWorkspaceFiles(workspaceId: string) {
+  async getWorkspaceFiles(projectId: string) {
     return this.db.query.files.findMany({
-      where: eq(files.workspaceId, workspaceId),
+      where: eq(files.projectId, projectId),
     })
   }
 }

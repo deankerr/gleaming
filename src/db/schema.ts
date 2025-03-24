@@ -20,7 +20,7 @@ export const files = sqliteTable(
 
     // will refer to tables in the future
     userId: text('user_id').notNull(),
-    workspaceId: text('workspace_id').notNull(),
+    projectId: text('project_id').notNull(),
 
     createdAt: text('created_at')
       .default(sql`CURRENT_TIMESTAMP`)

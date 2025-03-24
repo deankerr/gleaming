@@ -113,7 +113,7 @@ export const ingestImage: AppRouteHandler<IngestImageRoute> = async (c) => {
   const { url, filename: filenameParam } = c.req.valid('json')
 
   const userId = DEFAULT_USER_ID
-  const workspaceId = DEFAULT_WORKSPACE_ID
+  const projectId = DEFAULT_WORKSPACE_ID
 
   // Get services from context
   const storageService = c.get('storage')
@@ -172,7 +172,7 @@ export const ingestImage: AppRouteHandler<IngestImageRoute> = async (c) => {
       metadata: {},
       filename,
       userId,
-      workspaceId,
+      projectId,
     })
 
     // Return the created file

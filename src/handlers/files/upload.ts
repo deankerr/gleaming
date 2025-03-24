@@ -14,7 +14,7 @@ export const uploadImage: AppRouteHandler<UploadImageRoute> = async (c) => {
   console.log('upload:', { file, filenameParam })
 
   const userId = DEFAULT_USER_ID
-  const workspaceId = DEFAULT_WORKSPACE_ID
+  const projectId = DEFAULT_WORKSPACE_ID
 
   const storageService = c.get('storage')
   const db = c.get('db')
@@ -48,7 +48,7 @@ export const uploadImage: AppRouteHandler<UploadImageRoute> = async (c) => {
       filename,
       metadata: {},
       userId,
-      workspaceId,
+      projectId,
     })
 
     return c.json(fileRecord, 201)

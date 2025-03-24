@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "a615cc1c-4799-4775-b2d2-57c7a003f1ad",
+  "id": "fffea0b2-1e51-4d1c-b0f4-481e0a3ed9f9",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "files": {
@@ -71,8 +71,8 @@
           "notNull": true,
           "autoincrement": false
         },
-        "workspace_id": {
-          "name": "workspace_id",
+        "project_id": {
+          "name": "project_id",
           "type": "text",
           "primaryKey": false,
           "notNull": true,

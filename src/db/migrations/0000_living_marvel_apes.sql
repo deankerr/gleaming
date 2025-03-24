@@ -8,7 +8,7 @@ CREATE TABLE `files` (
 	`filename` text NOT NULL,
 	`metadata` text,
 	`user_id` text NOT NULL,
-	`workspace_id` text NOT NULL,
+	`project_id` text NOT NULL,
 	`created_at` text DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	`updated_at` text DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	`deleted_at` text
