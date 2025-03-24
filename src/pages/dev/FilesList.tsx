@@ -1,5 +1,5 @@
 import { FC } from 'hono/jsx'
-import type { FileMetadata } from '../../db/schema'
+import { type FileMetadata } from '../../db/schema'
 import { formatFileSize, formatDateRelative } from './utils'
 
 export interface FilesListProps {
