@@ -33,7 +33,17 @@ export const uploadImage: AppRouteHandler<UploadImageRoute> = async (c) => {
     const externalId = generateExternalId()
     const filename = filenameParam || (file as File)?.name || externalId
 
-    const r2Object = await storageService.storeFile(objectId, file, contentType)
+    const keyParts = {
+      userId,
+      projectId,
+      objectId,
+    }
+
+    const httpMetadata: R2HTTPMetadata = {
+      contentType,
+    }
+
+    const r2Object = await storageService.storeFile(keyParts, file, { httpMetadata })
     const md5 = r2Object.checksums.md5
     if (!md5) {
       throw badRequest('Failed to store file properly')

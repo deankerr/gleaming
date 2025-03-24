@@ -120,7 +120,7 @@ export const serveFile: AppRouteHandler<ServeFileRoute> = async (c) => {
     }
 
     // Get the file from storage
-    const r2Object = await storageService.getFile(fileRecord.objectId)
+    const r2Object = await storageService.getFile(fileRecord)
     if (!r2Object) {
       throw notFound('File content')
     }

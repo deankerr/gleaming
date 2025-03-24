@@ -156,7 +156,17 @@ export const ingestImage: AppRouteHandler<IngestImageRoute> = async (c) => {
       }
     }
 
-    const r2Object = await storageService.storeFile(objectId, fileContent, contentType)
+    const keyParts = {
+      userId,
+      projectId,
+      objectId,
+    }
+
+    const httpMetadata: R2HTTPMetadata = {
+      contentType,
+    }
+
+    const r2Object = await storageService.storeFile(keyParts, fileContent, { httpMetadata })
     const md5 = r2Object.checksums.md5
     if (!md5) {
       throw internalError('Failed to store file')
