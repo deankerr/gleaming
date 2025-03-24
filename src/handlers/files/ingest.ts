@@ -2,7 +2,7 @@ import type { IngestImageRoute } from '../../routes/api'
 import type { AppRouteHandler } from '../../types'
 import { bytesToHex } from '@noble/hashes/utils'
 import { ulid } from 'ulidx'
-import { DEFAULT_USER_ID, DEFAULT_WORKSPACE_ID, VALID_IMAGE_TYPES } from '../../constants'
+import { VALID_IMAGE_TYPES } from '../../constants'
 import { AppError, badRequest, internalError } from '../../utils/errors'
 import { generateExternalId } from '../../utils/id'
 
@@ -115,8 +115,8 @@ export const ingestImage: AppRouteHandler<IngestImageRoute> = async (c) => {
   // Extract payload from request body
   const { url, filename: filenameParam } = c.req.valid('json')
 
-  const userId = DEFAULT_USER_ID
-  const projectId = DEFAULT_WORKSPACE_ID
+  const userId = c.get('userId')
+  const projectId = c.get('projectId')
 
   // Get services from context
   const storageService = c.get('storage')

@@ -34,6 +34,17 @@ app.use('*', async (c, next) => {
   await next()
 })
 
+// Middleware to set up user and project context
+app.use('*', async (c, next) => {
+  const userId = c.env.DEFAULT_USER
+  const projectId = c.env.DEFAULT_PROJECT
+
+  c.set('userId', userId)
+  c.set('projectId', projectId)
+
+  await next()
+})
+
 // Standard middleware - apply these first so they work for all routes
 app.use('*', logger())
 app.use('*', secureHeaders())

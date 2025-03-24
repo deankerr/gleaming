@@ -10,6 +10,8 @@ export interface AppEnv {
     db: DBService
     storage: StorageService
     image: ImageService
+    userId: string
+    projectId: string
   }
 }
 

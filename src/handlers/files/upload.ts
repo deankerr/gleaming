@@ -2,7 +2,6 @@ import type { UploadImageRoute } from '../../routes/api'
 import type { AppRouteHandler } from '../../types'
 import { bytesToHex } from '@noble/hashes/utils'
 import { ulid } from 'ulidx'
-import { DEFAULT_USER_ID, DEFAULT_WORKSPACE_ID } from '../../constants'
 import { AppError, badRequest } from '../../utils/errors'
 import { generateExternalId } from '../../utils/id'
 
@@ -13,8 +12,8 @@ export const uploadImage: AppRouteHandler<UploadImageRoute> = async (c) => {
   const { file, filename: filenameParam } = c.req.valid('form')
   console.log('upload:', { file, filenameParam })
 
-  const userId = DEFAULT_USER_ID
-  const projectId = DEFAULT_WORKSPACE_ID
+  const userId = c.get('userId')
+  const projectId = c.get('projectId')
 
   const storageService = c.get('storage')
   const db = c.get('db')
