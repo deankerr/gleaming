@@ -8,8 +8,8 @@
     "db:generate": "drizzle-kit generate",
     "db:studio": "drizzle-kit studio",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint src",
-    "lint:fix": "eslint src --fix"
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "dependencies": {
     "@hono/zod-openapi": "^0.19.2",

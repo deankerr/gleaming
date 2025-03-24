@@ -1,6 +1,8 @@
 #!/usr/bin/env bun
+/* eslint-disable no-console */
+/* eslint-disable node/prefer-global/process */
 import { readFile } from 'node:fs/promises'
-import { join, basename } from 'node:path'
+import { basename, join } from 'node:path'
 import { parseArgs } from 'node:util'
 
 // Configuration constants
@@ -58,7 +60,8 @@ async function main() {
     }
 
     await commands[command as keyof typeof commands](...args)
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error:', error instanceof Error ? error.message : String(error))
     process.exit(1)
   }
@@ -101,11 +104,13 @@ function createHeaders(contentType?: string): HeadersInit {
 
   // Add authorization header if token is available and noauth is not set
   if (values.token && !values.noauth) {
-    headers['Authorization'] = `Bearer ${values.token}`
+    headers.Authorization = `Bearer ${values.token}`
     console.log('Using authentication token')
-  } else if (values.noauth) {
+  }
+  else if (values.noauth) {
     console.log('Authentication disabled with --noauth flag')
-  } else {
+  }
+  else {
     console.log('No authentication token provided. Use --token or set API_TOKEN env var')
   }
 
@@ -183,15 +188,18 @@ async function uploadFile(filepath?: string) {
     if (response.ok) {
       console.log('✅ File uploaded successfully!')
       displayFileDetails(data)
-    } else {
+    }
+    else {
       console.error('❌ Upload failed!')
       console.error(`Status: ${response.status} ${response.statusText}`)
       console.error('Response:', data)
     }
-  } catch (error) {
+  }
+  catch (error) {
     if (error instanceof Error && error.message.includes('ENOENT')) {
       console.error(`Error: File "${originalFilename}" not found in the demo directory`)
-    } else {
+    }
+    else {
       throw error
     }
   }
@@ -232,12 +240,14 @@ async function ingestImageUrl(url?: string) {
     if (response.ok) {
       console.log('✅ Image ingested successfully!')
       displayFileDetails(data)
-    } else {
+    }
+    else {
       console.error('❌ Ingestion failed!')
       console.error(`Status: ${response.status} ${response.statusText}`)
       console.error('Response:', data)
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error ingesting image from URL:', error)
     throw error
   }
@@ -253,38 +263,36 @@ async function getFile(hash?: string) {
 
   console.log(`Retrieving file with hash ${hash}...`)
 
-  try {
-    // Make the API request with authentication header
-    const response = await fetch(`${values.url}${PATH_INFO}/${hash}`, {
-      headers: createHeaders(),
-    })
+  // Make the API request with authentication header
+  const response = await fetch(`${values.url}${PATH_INFO}/${hash}`, {
+    headers: createHeaders(),
+  })
 
-    // Parse response
-    const data = (await response.json()) as any
+  // Parse response
+  const data = (await response.json()) as any
 
-    // Display results
-    if (response.ok) {
-      console.log('✅ File retrieved successfully!')
-      displayFileDetails(data)
-    } else {
-      console.error('❌ Retrieval failed!')
-      console.error(`Status: ${response.status} ${response.statusText}`)
-      console.error('Response:', data)
-    }
-  } catch (error) {
-    throw error
+  // Display results
+  if (response.ok) {
+    console.log('✅ File retrieved successfully!')
+    displayFileDetails(data)
+  }
+  else {
+    console.error('❌ Retrieval failed!')
+    console.error(`Status: ${response.status} ${response.statusText}`)
+    console.error('Response:', data)
   }
 }
 
 // Helper function to format bytes to human-readable format
 function formatBytes(bytes: number, decimals = 2): string {
-  if (bytes === 0) return '0 Bytes'
+  if (bytes === 0)
+    return '0 Bytes'
 
   const k = 1024
   const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB']
   const i = Math.floor(Math.log(bytes) / Math.log(k))
 
-  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(decimals))} ${sizes[i]}`
+  return `${Number.parseFloat((bytes / k ** i).toFixed(decimals))} ${sizes[i]}`
 }
 
 // Helper function to determine content type from filename

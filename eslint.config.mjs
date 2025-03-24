@@ -22,7 +22,7 @@ export default antfu({
     html: true,
     markdown: 'prettier',
   },
-  ignores: ['./worker-configuration.d.ts'],
+  ignores: ['worker-configuration.d.ts', 'notes/**'],
   rules: {
     'no-console': 'warn',
   },
