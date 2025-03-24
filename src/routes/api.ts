@@ -62,6 +62,10 @@ const UploadImageSchema = z
       description: 'Optional user-defined filename',
       example: 'my-image.jpg',
     }),
+    projectId: z.string().optional().openapi({
+      description: 'Project ID (defaults to default-project)',
+      example: 'my-project',
+    }),
   })
   .openapi('UploadImage')
 
@@ -75,6 +79,10 @@ const IngestImageSchema = z
     filename: z.string().optional().openapi({
       description: 'Optional user-defined filename',
       example: 'my-image.jpg',
+    }),
+    projectId: z.string().optional().openapi({
+      description: 'Project ID (defaults to default-project)',
+      example: 'my-project',
     }),
   })
   .openapi('IngestImage')

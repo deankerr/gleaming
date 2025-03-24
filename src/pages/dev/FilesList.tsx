@@ -55,6 +55,16 @@ export const FilesList: FC<FilesListProps> = async ({ files }) => {
           color: #666;
           white-space: nowrap;
         }
+        .id-cell {
+          font-size: 12px;
+          color: #888;
+          white-space: nowrap;
+        }
+        .id-label {
+          color: #aaa;
+          font-size: 11px;
+          margin-right: 4px;
+        }
         .action-cell {
           text-align: right;
           white-space: nowrap;
@@ -115,6 +125,8 @@ export const FilesList: FC<FilesListProps> = async ({ files }) => {
                     <th>Content Type</th>
                     <th>Size</th>
                     <th>Created</th>
+                    <th>Project</th>
+                    <th>User</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
@@ -131,6 +143,14 @@ export const FilesList: FC<FilesListProps> = async ({ files }) => {
                         <td class="content-type-cell">{contentType}</td>
                         <td class="size-cell">{formatFileSize(file.size)}</td>
                         <td class="date-cell">{formatDateRelative(file.createdAt)}</td>
+                        <td class="id-cell">
+                          <span class="id-label">pid:</span>
+                          {file.projectId}
+                        </td>
+                        <td class="id-cell">
+                          <span class="id-label">uid:</span>
+                          {file.userId}
+                        </td>
                         <td class="action-cell">
                           <a href={`/file/${file.externalId}`} target="_blank" class="btn btn-primary">
                             View

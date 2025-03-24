@@ -24,7 +24,7 @@ export default antfu({
   },
   ignores: ['worker-configuration.d.ts', 'notes/**'],
   rules: {
-    'no-console': 'warn',
+    'no-console': 'off',
   },
 
 })

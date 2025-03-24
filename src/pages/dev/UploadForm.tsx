@@ -103,6 +103,11 @@ export const UploadForm: FC = async () => {
               <input type="text" id="filename" name="filename" placeholder="my-awesome-image" />
               <div class="note">A unique identifier will be prepended to your filename</div>
             </div>
+            <div class="form-group">
+              <label for="project-id">Project ID (Optional)</label>
+              <input type="text" id="project-id" name="projectId" placeholder="my-project" />
+              <div class="note">Defaults to your default project if not specified</div>
+            </div>
             <div class="form-group auth-field">
               <label for="api-token">API Token</label>
               <input type="password" id="api-token" name="token" placeholder="Enter API token" />
@@ -122,6 +127,7 @@ export const UploadForm: FC = async () => {
               const fileInput = document.getElementById('file');
               const filename = document.getElementById('filename').value;
               const token = document.getElementById('api-token').value;
+              const projectId = document.getElementById('project-id').value;
               
               if (!fileInput.files || fileInput.files.length === 0) {
                 alert('Please select a file to upload');
@@ -132,6 +138,9 @@ export const UploadForm: FC = async () => {
               formData.append('file', fileInput.files[0]);
               if (filename) {
                 formData.append('filename', filename);
+              }
+              if (projectId) {
+                formData.append('projectId', projectId);
               }
               
               // Create headers with authentication
@@ -178,6 +187,11 @@ export const UploadForm: FC = async () => {
               <input type="text" id="filename" name="filename" placeholder="my-awesome-image" />
               <div class="note">A unique identifier will be prepended to your filename</div>
             </div>
+            <div class="form-group">
+              <label for="ingest-project-id">Project ID (Optional)</label>
+              <input type="text" id="ingest-project-id" name="projectId" placeholder="my-project" />
+              <div class="note">Defaults to your default project if not specified</div>
+            </div>
             <div class="form-group auth-field">
               <label for="ingest-api-token">API Token</label>
               <input type="password" id="ingest-api-token" name="token" placeholder="Enter API token" />
@@ -197,11 +211,15 @@ export const UploadForm: FC = async () => {
               const url = document.getElementById('url').value;
               const filename = document.getElementById('filename').value;
               const token = document.getElementById('ingest-api-token').value;
+              const projectId = document.getElementById('ingest-project-id').value;
               
               // Create the JSON payload
               const payload = { url: url };
               if (filename) {
                 payload.filename = filename;
+              }
+              if (projectId) {
+                payload.projectId = projectId;
               }
               
               // Create headers with authentication

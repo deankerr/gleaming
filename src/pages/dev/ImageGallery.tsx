@@ -75,6 +75,17 @@ export const ImageGallery: FC<ImageGalleryProps> = async ({ images }) => {
           font-size: 12px;
           color: #888;
         }
+        .id-info {
+          display: flex;
+          gap: 12px;
+          margin-top: 4px;
+          font-size: 11px;
+          color: #888;
+        }
+        .id-label {
+          color: #aaa;
+          margin-right: 2px;
+        }
         .btn-group {
           display: flex;
           gap: 8px;
@@ -165,6 +176,16 @@ export const ImageGallery: FC<ImageGalleryProps> = async ({ images }) => {
                           px
                         </p>
                       )}
+                      <div class="id-info">
+                        <span>
+                          <span class="id-label">pid:</span>
+                          {file.projectId}
+                        </span>
+                        <span>
+                          <span class="id-label">uid:</span>
+                          {file.userId}
+                        </span>
+                      </div>
                       <div class="image-meta">
                         <span>{formatFileSize(file.size)}</span>
                         <span>{formatDateRelative(file.createdAt)}</span>

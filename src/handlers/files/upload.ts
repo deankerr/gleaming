@@ -9,28 +9,28 @@ import { generateExternalId } from '../../utils/id'
  * Handler for uploading an image directly from the client
  */
 export const uploadImage: AppRouteHandler<UploadImageRoute> = async (c) => {
-  const { file, filename: filenameParam } = c.req.valid('form')
-  console.log('upload:', { file, filenameParam })
+  const formData = c.req.valid('form')
+  console.log('upload:', { formData })
 
   const userId = c.get('userId')
-  const projectId = c.get('projectId')
+  const projectId = formData.projectId || c.get('projectId')
 
   const storageService = c.get('storage')
   const db = c.get('db')
 
   try {
-    if (!file) {
+    if (!formData.file) {
       throw badRequest('No file provided')
     }
 
     // TODO: validate content type
-    const contentType = file.type || 'application/octet-stream'
+    const contentType = formData.file.type || 'application/octet-stream'
     console.log('contentType', contentType)
 
     // Generate a unique ID for both storage and database
     const objectId = ulid()
     const externalId = generateExternalId()
-    const filename = filenameParam || (file as File)?.name || externalId
+    const filename = formData.filename || formData.file.name || externalId
 
     const keyParts = {
       userId,
@@ -42,7 +42,7 @@ export const uploadImage: AppRouteHandler<UploadImageRoute> = async (c) => {
       contentType,
     }
 
-    const r2Object = await storageService.storeFile(keyParts, file, { httpMetadata })
+    const r2Object = await storageService.storeFile(keyParts, formData.file, { httpMetadata })
     const md5 = r2Object.checksums.md5
     if (!md5) {
       throw badRequest('Failed to store file properly')

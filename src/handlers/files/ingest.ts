@@ -113,10 +113,10 @@ async function safeFetch(
  */
 export const ingestImage: AppRouteHandler<IngestImageRoute> = async (c) => {
   // Extract payload from request body
-  const { url, filename: filenameParam } = c.req.valid('json')
+  const jsonData = c.req.valid('json')
 
   const userId = c.get('userId')
-  const projectId = c.get('projectId')
+  const projectId = jsonData.projectId || c.get('projectId')
 
   // Get services from context
   const storageService = c.get('storage')
@@ -124,7 +124,7 @@ export const ingestImage: AppRouteHandler<IngestImageRoute> = async (c) => {
 
   try {
     // Fetch the actual image
-    const response = await safeFetch(url, [new URL(c.req.url).hostname])
+    const response = await safeFetch(jsonData.url, [new URL(c.req.url).hostname])
     if (!response.ok) {
       throw badRequest(`Failed to fetch image from URL: ${response.statusText}`)
     }
@@ -138,7 +138,7 @@ export const ingestImage: AppRouteHandler<IngestImageRoute> = async (c) => {
     // Generate a unique ID for both storage and database
     const objectId = ulid()
     const externalId = generateExternalId()
-    const filename = filenameParam || parseUrl(url).pathname.split('/').pop() || externalId
+    const filename = jsonData.filename || parseUrl(jsonData.url).pathname.split('/').pop() || externalId
 
     // Fix for streams without known length (like SVGs from dynamic services)
     // Read the entire response into an ArrayBuffer first
