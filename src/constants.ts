@@ -1,3 +1,6 @@
+export const DEFAULT_USER = 'default-user'
+export const DEFAULT_PROJECT = 'default-project'
+
 /**
  * Valid image MIME types
  */

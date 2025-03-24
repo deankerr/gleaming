@@ -6,6 +6,7 @@ import { HTTPException } from 'hono/http-exception'
 import { logger } from 'hono/logger'
 import { prettyJSON } from 'hono/pretty-json'
 import { secureHeaders } from 'hono/secure-headers'
+import { DEFAULT_PROJECT, DEFAULT_USER } from './constants'
 import { apiAuth } from './middleware/auth'
 import { serveEmojiFavicon } from './middleware/serve-emoji-favicon'
 import { apiRouter } from './routes/api'
@@ -36,8 +37,8 @@ app.use('*', async (c, next) => {
 
 // Middleware to set up user and project context
 app.use('*', async (c, next) => {
-  const userId = c.env.DEFAULT_USER
-  const projectId = c.env.DEFAULT_PROJECT
+  const userId = c.env.DEFAULT_USER || DEFAULT_USER
+  const projectId = c.env.DEFAULT_PROJECT || DEFAULT_PROJECT
 
   c.set('userId', userId)
   c.set('projectId', projectId)
