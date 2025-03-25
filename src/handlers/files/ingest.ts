@@ -75,7 +75,7 @@ export const ingestImage: AppRouteHandler<IngestImageRoute> = async (c) => {
       contentHash: bytesToHex(new Uint8Array(md5)),
       contentType,
       size: r2Object.size,
-      metadata: {},
+
       filename,
       userId,
       projectId,

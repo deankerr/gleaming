@@ -55,7 +55,6 @@ export const uploadImage: AppRouteHandler<UploadImageRoute> = async (c) => {
       contentHash: bytesToHex(new Uint8Array(md5)),
       contentType,
       filename,
-      metadata: {},
       userId,
       projectId,
     })

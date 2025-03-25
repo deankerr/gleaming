@@ -32,41 +32,11 @@ export class DBService {
   }
 
   /**
-   * Get a file by content hash
-   */
-  async getFileByContentHash(hash: string) {
-    return this.db.query.files.findFirst({
-      where: eq(schema.files.contentHash, hash),
-    })
-  }
-
-  /**
    * Create a new file record
    */
-  async createFile(data: {
-    objectId: string
-    externalId: string
-    contentHash: string
-    contentType: string
-    size: number
-    metadata?: Record<string, any>
-    filename: string
-    userId: string
-    projectId: string
-  }) {
-    await this.db.insert(schema.files).values({
-      objectId: data.objectId,
-      externalId: data.externalId,
-      contentHash: data.contentHash,
-      contentType: data.contentType,
-      size: data.size,
-      metadata: data.metadata,
-      filename: data.filename,
-      userId: data.userId,
-      projectId: data.projectId,
-    })
-
-    console.log('db:files:insert:', data)
+  async createFile(data: typeof schema.files.$inferInsert) {
+    await this.db.insert(schema.files).values(data)
+    console.log('db:files:create', data)
     return this.getFileByObjectId(data.objectId)
   }
 

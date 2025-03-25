@@ -146,7 +146,7 @@ export const ImageGallery: FC<ImageGalleryProps> = async ({ images }) => {
                 const format = contentType.split('/')[1]?.toUpperCase() || 'UNKNOWN'
 
                 // Get dimensions from metadata if available
-                const metadata = (file.metadata as Record<string, any>) || {}
+                const metadata = (file.fileMetadata as Record<string, any>) || {}
                 const width = metadata.width
                 const height = metadata.height
                 const hasDimensions = typeof width === 'number' && typeof height === 'number'

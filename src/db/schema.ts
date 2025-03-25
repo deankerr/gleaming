@@ -1,8 +1,7 @@
 import { sql } from 'drizzle-orm'
 import { index, integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
 
-// Core files table
-const files = sqliteTable(
+export const filesTable = sqliteTable(
   'files',
   {
     objectId: text('object_id').primaryKey(), // primary id/r2 bucket key
@@ -16,7 +15,10 @@ const files = sqliteTable(
     contentType: text('content_type').notNull(),
 
     filename: text('filename').notNull(),
-    metadata: text('metadata', { mode: 'json' }), // file metadata
+    fileMetadata: text('file_metadata', { mode: 'json' }).notNull().default('{}'),
+
+    ingestUrl: text('ingest_url'),
+    ingestMetadata: text('ingest_metadata', { mode: 'json' }).notNull().default('{}'), // client ip/user agent
 
     // will refer to tables in the future
     userId: text('user_id').notNull(),
@@ -33,5 +35,5 @@ const files = sqliteTable(
   table => [index('external_id_idx').on(table.externalId), index('content_hash_idx').on(table.contentHash)],
 )
 
-export type FileMetadata = typeof files.$inferSelect
-export const schema = { files }
+export type FileMetadata = typeof filesTable.$inferSelect
+export const schema = { files: filesTable }

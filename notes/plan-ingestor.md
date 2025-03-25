@@ -31,10 +31,11 @@ Currently, our image ingestion system does not maintain any information about wh
 ### Storage Strategy
 
 1. **Permanent Storage (SQLite)**
-   - New table for origin records
-   - Links to main files table
-   - Stores comprehensive metadata
-   - Enables complex queries
+   - Store practical origin/request metadata
+   - Enable queries
+
+2. **Workers KV**
+   - ?
 
 ### Key Components
 
