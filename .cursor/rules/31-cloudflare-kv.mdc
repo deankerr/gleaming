@@ -1,0 +1,2025 @@
+---
+description: Comprehensive and up to date guide on using Cloudflare Workers KV
+globs: 
+alwaysApply: false
+---
+# Cloudflare Workers KV
+
+URL: https://developers.cloudflare.com/kv/
+
+import {
+	CardGrid,
+	Description,
+	Feature,
+	LinkTitleCard,
+	Plan,
+	RelatedProduct,
+	Tabs,
+	TabItem,
+	LinkButton,
+} from "~/components";
+
+<Description>
+
+Create a global, low-latency, key-value data storage.
+
+</Description>
+
+<Plan type="workers-all" />
+
+Workers KV is a data storage that allows you to store and retrieve data globally. With Workers KV, you can build dynamic and performant APIs and websites that support high read volumes with low latency.
+
+For example, you can use Workers KV for:
+
+- Caching API responses.
+- Storing user configurations / preferences.
+- Storing user authentication details.
+
+Access your Workers KV namespace from Cloudflare Workers using [Workers Bindings](/workers/runtime-apis/bindings/) or from your external application using the REST API:
+
+<Tabs>
+<TabItem label="Workers Binding API">
+	<Tabs>
+	<TabItem label="index.ts">
+```ts
+export default {
+	async fetch(request, env, ctx): Promise<Response> {
+		// write a key-value pair
+		await env.KV_BINDING.put('KEY', 'VALUE');
+
+    	// read a key-value pair
+    	const value = await env.KV_BINDING.get('KEY');
+
+    	// list all key-value pairs
+    	const allKeys = await env.KV_BINDING.list();
+
+    	// delete a key-value pair
+    	await env.KV_BINDING.delete('KEY');
+
+    	// return a Workers response
+    	return new Response(
+    		JSON.stringify({
+    			value: value,
+    			allKeys: allKeys,
+    		}),
+    	);
+    },
+
+} satisfies ExportedHandler<{ KV_BINDING: KVNamespace }>;
+
+    ```
+    </TabItem>
+    <TabItem label="wrangler.jsonc">
+
+```json
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "WORKER-NAME",
+	"main": "src/index.ts",
+	"compatibility_date": "2025-02-04",
+	"observability": {
+		"enabled": true
+	},
+
+	"kv_namespaces": [
+		{
+			"binding": "KV_BINDING",
+			"id": "<YOUR_BINDING_ID>"
+		}
+	]
+}
+```
+
+    </TabItem>
+    </Tabs>
+
+See the full [Workers KV binding API reference](/kv/api/read-key-value-pairs/).
+
+</TabItem>
+<TabItem label="REST API">
+
+    <Tabs>
+    	<TabItem label="cURL">
+    	```
+    	curl https://api.cloudflare.com/client/v4/accounts/$ACCOUNT_ID/storage/kv/namespaces/$NAMESPACE_ID/values/$KEY_NAME \
+    			-X PUT \
+    			-H 'Content-Type: multipart/form-data' \
+    			-H "X-Auth-Email: $CLOUDFLARE_EMAIL" \
+    			-H "X-Auth-Key: $CLOUDFLARE_API_KEY" \
+    			-d '{
+    				"value": "Some Value"
+    			}'
+
+    	curl https://api.cloudflare.com/client/v4/accounts/$ACCOUNT_ID/storage/kv/namespaces/$NAMESPACE_ID/values/$KEY_NAME \
+    			-H "X-Auth-Email: $CLOUDFLARE_EMAIL" \
+    			-H "X-Auth-Key: $CLOUDFLARE_API_KEY"
+    	```
+    	</TabItem>
+    	<TabItem label="TypeScript">
+    		```ts
+    		const client = new Cloudflare({
+    			apiEmail: process.env['CLOUDFLARE_EMAIL'], // This is the default and can be omitted
+    			apiKey: process.env['CLOUDFLARE_API_KEY'], // This is the default and can be omitted
+    		});
+
+    		const value = await client.kv.namespaces.values.update('<KV_NAMESPACE_ID>', 'KEY', {
+    			account_id: '<ACCOUNT_ID>',
+    			value: 'VALUE',
+    		});
+
+    		const value = await client.kv.namespaces.values.get('<KV_NAMESPACE_ID>', 'KEY', {
+    			account_id: '<ACCOUNT_ID>',
+    		});
+
+    		const value = await client.kv.namespaces.values.delete('<KV_NAMESPACE_ID>', 'KEY', {
+    			account_id: '<ACCOUNT_ID>',
+    		});
+
+    		// Automatically fetches more pages as needed.
+    		for await (const namespace of client.kv.namespaces.list({ account_id: '<ACCOUNT_ID>' })) {
+    			console.log(namespace.id);
+    		}
+
+    		```
+    	</TabItem>
+    </Tabs>
+
+See the full Workers KV [REST API and SDK reference](/api/resources/kv/subresources/namespaces/methods/list/) for details on using REST API from external applications, with pre-generated SDK's for external TypeScript, Python, or Go applications.
+
+</TabItem>
+</Tabs>
+
+<LinkButton href="/kv/get-started/">Get started</LinkButton>
+
+---
+
+## Features
+
+<Feature header="Key-value storage" href="/kv/get-started/">
+	Learn how Workers KV stores and retrieves data.
+</Feature>
+
+<Feature header="Wrangler" href="/workers/wrangler/install-and-update/">
+
+The Workers command-line interface, Wrangler, allows you to [create](/workers/wrangler/commands/#init), [test](/workers/wrangler/commands/#dev), and [deploy](/workers/wrangler/commands/#publish) your Workers projects.
+
+</Feature>
+
+<Feature header="Bindings" href="/kv/concepts/kv-bindings/">
+
+Bindings allow your Workers to interact with resources on the Cloudflare developer platform, including [R2](/r2/), [Durable Objects](/durable-objects/), and [D1](/d1/).
+
+</Feature>
+
+---
+
+## Related products
+
+<RelatedProduct header="R2" href="/r2/" product="r2">
+
+Cloudflare R2 Storage allows developers to store large amounts of unstructured data without the costly egress bandwidth fees associated with typical cloud storage services.
+
+</RelatedProduct>
+
+<RelatedProduct header="Durable Objects" href="/durable-objects/" product="durable-objects">
+
+Cloudflare Durable Objects allows developers to access scalable compute and permanent, consistent storage.
+
+</RelatedProduct>
+
+<RelatedProduct header="D1" href="/d1/" product="d1">
+
+Built on SQLite, D1 is Cloudflareâ€™s first queryable relational database. Create an entire database by importing data or defining your tables and writing your queries within a Worker or through the API.
+
+</RelatedProduct>
+
+---
+
+### More resources
+
+<CardGrid>
+
+<LinkTitleCard title="Limits" href="/kv/platform/limits/" icon="document">
+	&#x20;Learn about KV limits.
+</LinkTitleCard>
+
+<LinkTitleCard title="Pricing" href="/kv/platform/pricing/" icon="seti:shell">
+	&#x20;Learn about KV pricing.
+</LinkTitleCard>
+
+<LinkTitleCard
+	title="Discord"
+	href="https://discord.com/channels/595317990191398933/893253103695065128"
+	icon="discord"
+>
+	&#x20;Ask questions, show off what you are building, and discuss the platform
+	with other developers.
+</LinkTitleCard>
+
+<LinkTitleCard title="Twitter" href="https://x.com/cloudflaredev" icon="x.com">
+	&#x20;Learn about product announcements, new tutorials, and what is new in
+	Cloudflare Developer Platform.
+</LinkTitleCard>
+
+</CardGrid>
+
+---
+
+# Delete key-value pairs
+
+URL: https://developers.cloudflare.com/kv/api/delete-key-value-pairs/
+
+import { GlossaryTooltip } from "~/components"
+
+To delete a key-value pair, call the `delete()` method of the [KV binding](/kv/concepts/kv-bindings/) on any [KV namespace](/kv/concepts/kv-namespaces/) you have bound to your Worker code:
+
+```js
+env.NAMESPACE.delete(key);
+```
+
+#### Example
+
+An example of deleting a key-value pair from within a Worker:
+
+```js
+export default {
+  async fetch(request, env, ctx) {
+    try {
+      await env.NAMESPACE.delete("first-key");
+
+      return new Response("Successful delete", {
+        status: 200
+      });
+    }
+    catch (e)
+    {
+      return new Response(e.message, {status: 500});
+    }
+  },
+};
+```
+
+## Reference
+
+The following method is provided to delete from KV:
+- [delete()](#delete-method)
+
+### `delete()` method
+
+To delete a key-value pair, call the `delete()` method of the [KV binding](/kv/concepts/kv-bindings/) on any KV namespace you have bound to your Worker code:
+
+```js
+env.NAMESPACE.delete(key);
+```
+
+#### Parameters
+
+* `key`: `string`
+  * The key to associate with the value.
+
+#### Response
+
+* `response`: `Promise<void>`
+  * A `Promise` that resolves if the delete is successful.
+
+
+This method returns a promise that you should `await` on to verify successful deletion. Calling `delete()` on a non-existing key is returned as a successful delete.
+
+Calling the `delete()` method will remove the key and value from your KV namespace. As with any operations, it may take some time for the key to be deleted from various points in the Cloudflare global network.
+
+## Guidance
+
+### Delete data in bulk
+
+Delete more than one key-value pair at a time with Wrangler or [via the REST API](/api/resources/kv/subresources/namespaces/methods/bulk_delete/).
+
+The bulk REST API can accept up to 10,000 KV pairs at once. Bulk writes are not supported using the [KV binding](/kv/concepts/kv-bindings/).
+
+## Other methods to access KV
+You can also [delete key-value pairs from the command line with Wrangler](/kv/reference/kv-commands/#kv-namespace-delete) or [with the REST API](/api/resources/kv/subresources/namespaces/subresources/values/methods/delete/).
+
+---
+
+# Workers Binding API
+
+URL: https://developers.cloudflare.com/kv/api/
+
+import { DirectoryListing } from "~/components";
+
+<DirectoryListing />
+
+---
+
+# List keys
+
+URL: https://developers.cloudflare.com/kv/api/list-keys/
+
+To list all the keys in your KV namespace, call the `list()` method of the [KV binding](/kv/concepts/kv-bindings/) on any [KV namespace](/kv/concepts/kv-namespaces/) you have bound to your Worker code:
+
+
+```js
+env.NAMESPACE.list();
+```
+
+The `list()` method returns a promise you can `await` on to get the value.
+
+#### Example
+
+An example of listing keys from within a Worker:
+
+```js
+export default {
+  async fetch(request, env, ctx) {
+    try {
+      const value = await env.NAMESPACE.list();
+
+      return new Response(JSON.stringify(value.keys), {
+        status: 200
+      });
+    }
+    catch (e)
+    {
+      return new Response(e.message, {status: 500});
+    }
+  },
+};
+```
+
+## Reference
+
+The following method is provided to list the keys of KV:
+- [list()](#list-method)
+
+### `list()` method
+
+To list all the keys in your KV namespace, call the `list()` method of the [KV binding](/kv/concepts/kv-bindings/) on any KV namespace you have bound to your Worker code:
+
+```ts
+env.NAMESPACE.list(options?)
+```
+#### Parameters
+* `options`: `{
+  prefix?: string,
+  limit?: string,
+  cursor?: string
+}`
+  * An object with attributes `prefix` (optional), `limit` (optional), or `cursor` (optional).
+    * `prefix` is a `string` that represents a prefix you can use to filter all keys.
+    * `limit` is the maximum number of keys returned. The default is 1,000, which is the maximum. It is unlikely that you will want to change this default but it is included for completeness.
+    * `cursor` is a `string` used for paginating responses.
+
+#### Response
+* `response`: `Promise<{
+  keys: {
+    name: string,
+    expiration?: number,
+    metadata?: object
+  }[],
+  list_complete: boolean,
+  cursor: string
+}>`
+  * A `Promise` that resolves to an object containing `keys`, `list_complete`, and `cursor` attributes.
+    * `keys` is an array that contains an object for each key listed. Each object has attributes `name`, `expiration` (optional), and `metadata` (optional). If the key-value pair has an expiration set, the expiration will be present and in absolute value form (even if it was set in TTL form). If the key-value pair has non-null metadata set, the metadata will be present.
+    * `list_complete` is a boolean, which will be `false` if there are more keys to fetch, even if the `keys` array is empty.
+    * `cursor` is a `string` used for paginating responses.
+
+The `list()` method returns a promise which resolves with an object that looks like the following:
+
+```json
+{
+  "keys": [
+    {
+      "name": "foo",
+      "expiration": 1234,
+      "metadata": { "someMetadataKey": "someMetadataValue" }
+    }
+  ],
+  "list_complete": false,
+  "cursor": "6Ck1la0VxJ0djhidm1MdX2FyD"
+}
+```
+
+The `keys` property will contain an array of objects describing each key. That object will have one to three keys of its own: the `name` of the key, and optionally the key's `expiration` and `metadata` values.
+
+The `name` is a `string`, the `expiration` value is a number, and `metadata` is whatever type was set initially. The `expiration` value will only be returned if the key has an expiration and will be in the absolute value form, even if it was set in the TTL form. Any `metadata` will only be returned if the given key has non-null associated metadata.
+
+If `list_complete` is `false`, there are more keys to fetch, even if the `keys` array is empty. You will use the `cursor` property to get more keys. Refer to [Pagination](#pagination) for more details.
+
+Consider storing your values in metadata if your values fit in the [metadata-size limit](/kv/platform/limits/). Storing values in metadata is more efficient than a `list()` followed by a `get()` per key. When using `put()`, leave the `value` parameter empty and instead include a property in the metadata object:
+
+```js
+await NAMESPACE.put(key, "", {
+  metadata: { value: value },
+});
+```
+
+Changes may take up to 60 seconds (or the value set with `cacheTtl` of the `get()` or `getWithMetadata()` method) to be reflected on the application calling the method on the KV namespace.
+
+## Guidance
+
+### List by prefix
+
+List all the keys starting with a particular prefix.
+
+For example, you may have structured your keys with a user, a user ID, and key names, separated by colons (such as `user:1:<key>`). You could get the keys for user number one by using the following code:
+
+```js
+export default {
+  async fetch(request, env, ctx) {
+    const value = await env.NAMESPACE.list({ prefix: "user:1:" });
+    return new Response(value.keys);
+  },
+};
+```
+
+This will return all keys starting with the `"user:1:"` prefix.
+
+### Ordering
+
+Keys are always returned in lexicographically sorted order according to their UTF-8 bytes.
+
+### Pagination
+
+If there are more keys to fetch, the `list_complete` key will be set to `false` and a `cursor` will also be returned. In this case, you can call `list()` again with the `cursor` value to get the next batch of keys:
+
+```js
+const value = await NAMESPACE.list();
+
+const cursor = value.cursor;
+
+const next_value = await NAMESPACE.list({ cursor: cursor });
+```
+
+Checking for an empty array in `keys` is not sufficient to determine whether there are more keys to fetch. Instead, use `list_complete`.
+
+It is possible to have an empty array in `keys`, but still have more keys to fetch, because [recently expired or deleted keys](https://en.wikipedia.org/wiki/Tombstone_%28data_store%29) must be iterated through but will not be included in the returned `keys`.
+
+When de-paginating a large result set while also providing a `prefix` argument, the `prefix` argument must be provided in all subsequent calls along with the initial arguments.
+
+### Optimizing storage with metadata for `list()` operations
+
+Consider storing your values in metadata if your values fit in the [metadata-size limit](/kv/platform/limits/). Storing values in metadata is more efficient than a `list()` followed by a `get()` per key. When using `put()`, leave the `value` parameter empty and instead include a property in the metadata object:
+
+```js
+await NAMESPACE.put(key, "", {
+  metadata: { value: value },
+});
+```
+
+## Other methods to access KV
+You can also [list keys on the command line with Wrangler](/kv/reference/kv-commands/#kv-namespace-list) or [with the REST API](/api/resources/kv/subresources/namespaces/subresources/keys/methods/list/).
+
+---
+
+# Read key-value pairs
+
+URL: https://developers.cloudflare.com/kv/api/read-key-value-pairs/
+
+To get the value for a given key, call the `get()` method of the [KV binding](/kv/concepts/kv-bindings/) on any [KV namespace](/kv/concepts/kv-namespaces/) you have bound to your Worker code:
+
+```js
+env.NAMESPACE.get(key);
+```
+
+The `get()` method returns a promise you can `await` on to get the value. If the key is not found, the promise will resolve with the literal value `null`.
+
+#### Example
+
+An example of reading a key from within a Worker:
+
+```js
+export default {
+	async fetch(request, env, ctx) {
+		try {
+			const value = await env.NAMESPACE.get("first-key");
+
+			if (value === null) {
+				return new Response("Value not found", { status: 404 });
+			}
+			return new Response(value);
+		} catch (e) {
+			return new Response(e.message, { status: 500 });
+		}
+	},
+};
+```
+
+## Reference
+
+The following methods are provided to read from KV:
+
+- [get()](#get-method)
+- [getWithMetadata()](#getwithmetadata-method)
+
+### `get()` method
+
+To get the value for a given key, call the `get()` method on any KV namespace you have bound to your Worker code:
+
+```js
+env.NAMESPACE.get(key, type?);
+// OR
+env.NAMESPACE.get(key, options?);
+```
+
+The `get()` method returns a promise you can `await` on to get the value. If the key is not found, the promise will resolve with the literal value `null`.
+
+#### Parameters
+
+- `key`: `string`
+  - The key of the KV pair.
+- `type`: `"text" | "json" | "arrayBuffer" | "stream"`
+  - Optional. The type of the value to be returned. `text` is the default.
+- `options`: `{
+    cacheTtl?: number,
+    type?: "text" | "json" | "arrayBuffer" | "stream"
+}`
+  - Optional. Object containing the optional `cacheTtl` and `type` properties. The `cacheTtl` property defines the length of time in seconds that a KV result is cached in the global network location it is accessed from (minimum: 60). The `type` property defines the type of the value to be returned.
+
+#### Response
+
+- `response`: `Promise<string | Object | ArrayBuffer | ReadableStream | null>`
+  - The value for the requested KV pair. The response type will depend on the `type` parameter provided for the `get()` command as follows:
+    - `text`: A `string` (default).
+    - `json`: An object decoded from a JSON string.
+    - `arrayBuffer`: An [`ArrayBuffer`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer) instance.
+    - `stream`: A [`ReadableStream`](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream).
+
+The `get()` method may return stale values. If a given key has recently been read in a given location, writes or updates to the key made in other locations may take up to 60 seconds (or the duration of the `cacheTtl`) to display.
+
+### `getWithMetadata()` method
+
+To get the value for a given key along with its metadata, call the `getWithMetadata()` method on any KV namespace you have bound to your Worker code:
+
+```js
+env.NAMESPACE.getWithMetadata(key, type?);
+// OR
+env.NAMESPACE.getWithMetadata(key, options?);
+```
+
+Metadata is a serializable value you append to each KV entry.
+
+#### Parameters
+
+- `key`: `string`
+  - The key of the KV pair.
+- `type`: `"text" | "json" | "arrayBuffer" | "stream"`
+  - Optional. The type of the value to be returned. `text` is the default.
+- `options`: `{
+    cacheTtl?: number,
+    type?: "text" | "json" | "arrayBuffer" | "stream"
+}`
+  - Optional. Object containing the optional `cacheTtl` and `type` properties. The `cacheTtl` property defines the length of time in seconds that a KV result is cached in the global network location it is accessed from (minimum: 60). The `type` property defines the type of the value to be returned.
+
+#### Response
+
+- `response`: `Promise<{
+value: string | Object | ArrayBuffer | ReadableStream | null,
+metadata: string | null
+}>`
+
+  - An object containing the value and the metadata for the requested KV pair. The type of the value attribute will depend on the `type` parameter provided for the `getWithMetadata()` command as follows:
+    - `text`: A `string` (default).
+    - `json`: An object decoded from a JSON string.
+    - `arrayBuffer`: An [`ArrayBuffer`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer) instance.
+    - `stream`: A [`ReadableStream`](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream).
+
+If there is no metadata associated with the requested key-value pair, `null` will be returned for metadata.
+
+The `getWithMetadata()` method may return stale values. If a given key has recently been read in a given location, writes or updates to the key made in other locations may take up to 60 seconds (or the duration of the `cacheTtl`) to display.
+
+#### Example
+
+An example of reading a key with metadata from within a Worker:
+
+```js
+export default {
+	async fetch(request, env, ctx) {
+		try {
+			const { value, metadata } =
+				await env.NAMESPACE.getWithMetadata("first-key");
+
+			if (value === null) {
+				return new Response("Value not found", { status: 404 });
+			}
+			return new Response(value);
+		} catch (e) {
+			return new Response(e.message, { status: 500 });
+		}
+	},
+};
+```
+
+## Guidance
+
+### Type parameter
+
+For simple values, use the default `text` type which provides you with your value as a `string`. For convenience, a `json` type is also specified which will convert a JSON value into an object before returning the object to you. For large values, use `stream` to request a `ReadableStream`. For binary values, use `arrayBuffer` to request an `ArrayBuffer`.
+
+For large values, the choice of `type` can have a noticeable effect on latency and CPU usage. For reference, the `type` can be ordered from fastest to slowest as `stream`, `arrayBuffer`, `text`, and `json`.
+
+### CacheTtl parameter
+
+`cacheTtl` is a parameter that defines the length of time in seconds that a KV result is cached in the global network location it is accessed from.
+
+Defining the length of time in seconds is useful for reducing cold read latency on keys that are read relatively infrequently. `cacheTtl` is useful if your data is write-once or write-rarely.
+
+:::note[Hot and cold read]
+
+A hot read means that the data is cached on Cloudflare's edge network using the [CDN](https://developers.cloudflare.com/cache/), whether it is in a local cache or a regional cache. A cold read means that the data is not cached, so the data must be fetched from the central stores. Both existing key-value pairs and non-existent key-value pairs (also known as negative lookups) are cached at the edge.
+:::
+
+`cacheTtl` is not recommended if your data is updated often and you need to see updates shortly after they are written, because writes that happen from other global network locations will not be visible until the cached value expires.
+
+The `cacheTtl` parameter must be an integer greater than or equal to `60`, which is the default.
+
+The effective `cacheTtl` of an already cached item can be reduced by getting it again with a lower `cacheTtl`. For example, if you did `NAMESPACE.get(key, {cacheTtl: 86400})` but later realized that caching for 24 hours was too long, you could `NAMESPACE.get(key, {cacheTtl: 300})` or even `NAMESPACE.get(key)` and it would check for newer data to respect the provided `cacheTtl`, which defaults to 60 seconds.
+
+## Other methods to access KV
+
+You can [read key-value pairs from the command line with Wrangler](/kv/reference/kv-commands/#kv-key-get) and [from the REST API](/api/resources/kv/subresources/namespaces/subresources/values/methods/get/).
+
+---
+
+# Examples
+
+URL: https://developers.cloudflare.com/kv/examples/
+
+import { GlossaryTooltip, ListExamples } from "~/components";
+
+Explore the following <GlossaryTooltip term="code example">examples</GlossaryTooltip> for KV.
+
+<ListExamples directory="kv/examples/" />
+
+---
+
+# How KV works
+
+URL: https://developers.cloudflare.com/kv/concepts/how-kv-works/
+
+KV is a global, low-latency, key-value data store. It stores data in a small number of centralized data centers, then caches that data in Cloudflare's data centers after access.
+
+KV supports exceptionally high read volumes with low latency, making it possible to build dynamic APIs that scale thanks to KV's built-in caching and global distribution.
+Requests which are not in cache and need to access the central stores can experience higher latencies.
+
+## Write data to KV and read data from KV
+
+When you write to KV, your data is written to central data stores. Your data is not sent automatically to every location's cache.
+
+![Your data is written to central data stores when you write to KV.](~/assets/images/kv/kv-write.svg)
+
+Initial reads from a location do not have a cached value. Data must be read from the nearest regional tier, followed by a central tier, degrading finally to the central stores for a truly cold global read. While the first access is slow globally, subsequent requests are faster, especially if requests are concentrated in a single region.
+
+:::note[Hot and cold read]
+
+A hot read means that the data is cached on Cloudflare's edge network using the [CDN](https://developers.cloudflare.com/cache/), whether it is in a local cache or a regional cache. A cold read means that the data is not cached, so the data must be fetched from the central stores.
+:::
+
+![Initial reads will miss the cache and go to the nearest central data store first.](~/assets/images/kv/kv-slow-read.svg)
+
+Frequent reads from the same location return the cached value without reading from anywhere else, resulting in the fastest response times. KV operates diligently to update the cached values by refreshing from upper tier caches and central data stores before cache expires in the background.
+
+Refreshing from upper tiers and the central data stores in the background is done carefully so that assets that are being accessed continue to be kept served from the cache without any stalls.
+
+![As mentioned above, frequent reads will return a cached value.](~/assets/images/kv/kv-fast-read.svg)
+
+KV is optimized for high-read applications. It stores data centrally and uses a hybrid push/pull-based replication to store data in cache. KV is suitable for use cases where you need to write relatively infrequently, but read quickly and frequently. Infrequently read values are pulled from other data centers or the central stores, while more popular values are cached in the data centers they are requested from.
+
+## Performance
+
+To improve KV performance, increase the [`cacheTtl` parameter](/kv/api/read-key-value-pairs/#cachettl-parameter) up from its default 60 seconds.
+
+KV achieves high performance by [caching](https://www.cloudflare.com/en-gb/learning/cdn/what-is-caching/) which makes reads eventually-consistent with writes.
+
+Changes are usually immediately visible in the Cloudflare global network location at which they are made. Changes may take up to 60 seconds or more to be visible in other global network locations as their cached versions of the data time out.
+
+Negative lookups indicating that the key does not exist are also cached, so the same delay exists noticing a value is created as when a value is changed.
+
+## Consistency
+
+KV achieves high performance by being eventually-consistent. At the Cloudflare global network location at which changes are made, these changes are usually immediately visible. However, this is not guaranteed and therefore it is not advised to rely on this behaviour. In other global network locations changes may take up to 60 seconds or more to be visible as their cached versions of the data time-out.
+
+Visibility of changes takes longer in locations which have recently read a previous version of a given key (including reads that indicated the key did not exist, which are also cached locally).
+
+:::note
+
+KV is not ideal for applications where you need support for atomic operations or where values must be read and written in a single transaction.
+If you need stronger consistency guarantees, consider using [Durable Objects](/durable-objects/).
+:::
+
+An approach to achieve write-after-write consistency is to send all of your writes for a given KV key through a corresponding instance of a Durable Object, and then read that value from KV in other Workers. This is useful if you need more control over writes, but are satisfied with KV's read characteristics described above.
+
+## Guidance
+
+Workers KV is an eventually-consistent edge key-value store. That makes it ideal for **read-heavy**, highly cacheable workloads such as:
+
+- Serving static assets
+- Storing application configuration
+- Storing user preferences
+- Implementing allow-lists/deny-lists
+- Caching
+
+In these scenarios, Workers are invoked in a data center closest to the user and Workers KV data will be cached in that region for subsequent requests to minimize latency.
+
+If you have a **write-heavy** [Redis](https://redis.io)-type workload where you are updating the same key tens or hundreds of times per second, KV will not be an ideal fit.
+If you can revisit how your application writes to single key-value pairs and spread your writes across several discrete keys, Workers KV can suit your needs.
+Alternatively, [Durable Objects](/durable-objects/) provides a key-value API with higher writes per key rate limits.
+
+## Security
+
+Refer to [Data security documentation](/kv/reference/data-security/) to understand how Workers KV secures data.
+
+---
+
+# Store and retrieve static assets with Workers KV
+
+URL: https://developers.cloudflare.com/kv/examples/workers-kv-to-serve-assets/
+
+import { Render, PackageManagers } from "~/components";
+
+By storing static assets in Workers KV, you can retrieve these assets globally with low-latency and high throughput. You can then serve these assets directly, or use them to dynamically generate responses. This can be useful when serving files and images, or when generating dynamic HTML responses from static assets such as translations.
+
+:::note[Note]
+With [Workers KV](/kv), you can access, edit and store assets directly from your [Worker](/workers). If you need to serve assets as part of a front-end or full-stack web application, consider using [Cloudflare Pages](/pages/) or [Workers static assets](/workers/static-assets/), which provide a purpose-built deployment experience for web applications and their assets.
+:::
+
+<Render file="tutorials-before-you-start" product="workers" />
+
+## 1. Create a new Worker application
+
+To get started, create a Worker application using the [`create-cloudflare` CLI](https://github.com/cloudflare/workers-sdk/tree/main/packages/create-cloudflare). Open a terminal window and run the following command:
+
+<PackageManagers
+	type="create"
+	pkg="cloudflare@latest"
+	args={"example-kv-assets"}
+/>
+
+<Render
+	file="c3-post-run-steps"
+	product="workers"
+	params={{
+		category: "hello-world",
+		type: "Worker only",
+		lang: "TypeScript",
+	}}
+/>
+
+Then, move into your newly created application
+
+```sh
+cd example-kv-assets
+```
+
+We'll also install the dependencies we will need for this project.
+
+```sh
+npm install mime accept-language-parser
+npm install --save-dev @types/accept-language-parser
+```
+
+## 2. Create a new KV namespace
+
+Next, we will create a KV store. This can be done through the Cloudflare dashboard or the Wrangler CLI. For this example, we will use the Wrangler CLI.
+
+To create a KV store via Wrangler:
+
+1. Open your terminal and run the following command:
+
+   ```sh
+   npx wrangler kv namespace create assets
+   ```
+
+   The `wrangler kv namespace create assets` subcommand creates a KV namespace by concatenating your Worker's name and the value provided for `assets`. An `id` will be randomly generated for the KV namespace.
+
+   ```sh
+   npx wrangler kv namespace create assets
+   ```
+
+   ```sh {6} output
+   ðŸŒ€ Creating namespace with title "example-kv-assets-assets"
+   âœ¨ Success!
+   Add the following to your configuration file in your kv_namespaces array:
+   [[kv_namespaces]]
+   binding = "assets"
+   id = "<GENERATED_NAMESPACE_ID>"
+   ```
+
+2. In your Wrangler file, add the following with the values generated in the terminal:
+
+   ```bash {3} title="wrangler.toml"
+   [[kv_namespaces]]
+   binding = "assets"
+   id = "<GENERATED_NAMESPACE_ID>"
+   ```
+
+   The [KV binding](/kv/concepts/kv-bindings/) `assets` is how your Worker will interact with the [KV namespace](/kv/concepts/kv-namespaces/). This binding will be provided as a runtime variable within your Workers code by the Workers runtime.
+
+   We'll also create a preview KV namespace. It is recommended to create a separate KV namespace when developing locally to avoid making changes to the production namespace. When developing locally against remote resources, the Wrangler CLI will only use the namespace specified by `preview_id` in the KV namespace configuration of the Wrangler file.
+
+3. In your terminal, run the following command:
+
+   ```sh
+   npx wrangler kv namespace create assets --preview
+   ```
+
+   This command will create a special KV namespace that will be used only when developing with Wrangler against remote resources using `wrangler dev --remote`.
+
+   ```sh
+   npx wrangler kv namespace create assets --preview
+   ```
+
+   ```sh {6} output
+   ðŸŒ€ Creating namespace with title "example-kv-assets-assets_preview"
+   âœ¨ Success!
+   Add the following to your configuration file in your kv_namespaces array:
+   [[kv_namespaces]]
+   binding = "assets"
+   preview_id = "<GENERATED_PREVIEW_NAMESPACE_ID>"
+   ```
+
+4. In your Wrangler file, add the additional preview_id below kv_namespaces with the values generated in the terminal:
+
+   ```bash {4} title="wrangler.toml"
+   [[kv_namespaces]]
+   binding = "assets"
+   id = "<GENERATED_NAMESPACE_ID>"
+   preview_id = "<GENERATED_PREVIEW_NAMESPACE_ID>"
+   ```
+
+We now have one KV binding that will use the production KV namespace when deployed and the preview KV namespace when developing locally against remote resources with `wrangler dev --remote`.
+
+## 3. Store static assets in KV using Wrangler
+
+To store static assets in KV, you can use the Wrangler CLI, the KV binding from a Worker application, or the KV REST API. We'll demonstrate how to use the Wrangler CLI.
+
+For this scenario, we'll be storing a sample HTML file within our KV store. Create a new file `index.html` in the root of project with the following content:
+
+```html title="index.html"
+Hello World!
+```
+
+We can then use the following Wrangler commands to create a KV pair for this file within our production and preview namespaces:
+
+```sh
+npx wrangler kv key put index.html --path index.html --binding assets --preview false
+npx wrangler kv key put index.html --path index.html --binding assets --preview
+```
+
+This will create a KV pair with the filename as key and the file content as value, within the our production and preview namespaces specified by your binding in your Wrangler file.
+
+## 4. Serve static assets from KV from your Worker application
+
+Within the `index.ts` file of our Worker project, replace the contents with the following:
+
+```js title="index.ts"
+
+import mime from 'mime';
+
+interface Env {
+	assets: KVNamespace;
+}
+
+export default {
+	async fetch(request, env, ctx): Promise<Response> {
+		//return error if not a get request
+		if(request.method !== 'GET'){
+			return new Response('Method Not Allowed', {
+				status: 405,
+			})
+		}
+
+		//get the key from the url & return error if key missing
+		const parsedUrl = new URL(request.url)
+		const key = parsedUrl.pathname.replace(/^\/+/, '') // strip any preceding /'s
+		if(!key){
+			return new Response('Missing path in URL', {
+				status: 400
+			})
+		}
+
+		//get the mimetype from the key path
+		const extension = key.split('.').pop();
+		let mimeType = mime.getType(key) || "text/plain";
+		if (mimeType.startsWith("text") || mimeType === "application/javascript") {
+			mimeType += "; charset=utf-8";
+		}
+
+		//get the value from the KV store and return it if found
+		const value = await env.assets.get(key, 'arrayBuffer')
+		if(!value){
+			return new Response("Not found", {
+				status: 404
+			})
+		}
+		return new Response(value, {
+			status: 200,
+			headers: new Headers({
+				"Content-Type": mimeType
+			})
+		});
+	},
+} satisfies ExportedHandler<Env>;
+```
+
+This code will use the path within the URL and find the file associated to the path within the KV store. It also sets the proper MIME type in the response to indicate to the browser how to handle the response. To retrieve the value from the KV store, this code uses `arrayBuffer` to properly handle binary data such as images, documents, and video/audio files.
+
+To start the Worker, run the following within a terminal:
+
+```sh
+npx wrangler dev --remote
+```
+
+This will run you Worker code against your remote resources, specifically using the preview KV namespace as configured.
+
+```sh
+npx wrangler dev --remote
+```
+
+```sh output
+Your worker has access to the following bindings:
+- KV Namespaces:
+  - assets: <GENERATED_PREVIEW_NAMESPACE_ID>
+[wrangler:inf] Ready on http://localhost:<PORT>
+```
+
+Access the URL provided by the Wrangler command as such `http://localhost:<PORT>/index.html`. You will be able to see the returned HTML file containing the file contents of our `index.html` file that was added to our KV store. Try it out with an image or a document and you will see that this Worker is also properly serving those assets from KV.
+
+## 5. Create an endpoint to generate dynamic responses from your key-value pairs
+
+We'll add a `hello-world` endpoint to our Workers application, which will return a "Hello World!" message based on the language requested to demonstrate how to generate a dynamic response from our KV-stored assets.
+
+Start by creating this file in the root of your project:
+
+```json title="hello-world.json"
+[
+	{
+		"language_code": "en",
+		"message": "Hello World!"
+	},
+	{
+		"language_code": "es",
+		"message": "Â¡Hola Mundo!"
+	},
+	{
+		"language_code": "fr",
+		"message": "Bonjour le monde!"
+	},
+	{
+		"language_code": "de",
+		"message": "Hallo Welt!"
+	},
+	{
+		"language_code": "zh",
+		"message": "ä½ å¥½ï¼Œä¸–ç•Œï¼"
+	},
+	{
+		"language_code": "ja",
+		"message": "ã“ã‚“ã«ã¡ã¯ã€ä¸–ç•Œï¼"
+	},
+	{
+		"language_code": "hi",
+		"message": "à¤¨à¤®à¤¸à¥à¤¤à¥‡ à¤¦à¥à¤¨à¤¿à¤¯à¤¾!"
+	},
+	{
+		"language_code": "ar",
+		"message": "Ù…Ø±Ø­Ø¨Ø§ Ø¨Ø§Ù„Ø¹Ø§Ù„Ù…!"
+	}
+]
+```
+
+Open a terminal and enter the following KV command to create a KV entry for the translations file:
+
+```sh
+npx wrangler kv key put hello-world.json --path hello-world.json --binding assets --preview false
+npx wrangler kv key put hello-world.json --path hello-world.json --binding assets --preview
+```
+
+Update your Workers code to add logic to serve a translated HTML file based on the language of the Accept-Language header of the request:
+
+```js {2, 26-63} title="index.ts"
+import mime from 'mime';
+import parser from 'accept-language-parser'
+
+interface Env {
+	assets: KVNamespace;
+}
+
+export default {
+	async fetch(request, env, ctx): Promise<Response> {
+		//return error if not a get request
+		if(request.method !== 'GET'){
+			return new Response('Method Not Allowed', {
+				status: 405,
+			})
+		}
+
+		//get the key from the url & return error if key missing
+		const parsedUrl = new URL(request.url)
+		const key = parsedUrl.pathname.replace(/^\/+/, '') // strip any preceding /'s
+		if(!key){
+			return new Response('Missing path in URL', {
+				status: 400
+			})
+		}
+
+		//add handler for translation path
+		if(key === 'hello-world'){
+			//retrieve the language header from the request and the translations from KV
+			const languageHeader = request.headers.get('Accept-Language') || 'en'//default to english
+			const translations : {
+				"language_code": string,
+				"message": string
+			}[] = await env.assets.get('hello-world.json', 'json') || [];
+
+			//extract the requested language
+			const supportedLanguageCodes = translations.map(item => item.language_code)
+			const languageCode = parser.pick(supportedLanguageCodes, languageHeader, {
+				loose: true
+			})
+
+			//get the message for the selected language
+			let selectedTranslation = translations.find(item => item.language_code === languageCode)
+			if(!selectedTranslation) selectedTranslation = translations.find(item => item.language_code === "en")
+			const helloWorldTranslated = selectedTranslation!['message'];
+
+			//generate and return the translated html
+			const html = `<!DOCTYPE html>
+			<html>
+				<head>
+					<title>Hello World translation</title>
+				</head>
+				<body>
+					<h1>${helloWorldTranslated}</h1>
+				</body>
+			</html>
+			`
+			return new Response(html, {
+				status: 200,
+				headers: {
+					'Content-Type': 'text/html; charset=utf-8'
+				}
+			})
+		}
+
+		//get the mimetype from the key path
+		const extension = key.split('.').pop();
+		let mimeType = mime.getType(key) || "text/plain";
+		if (mimeType.startsWith("text") || mimeType === "application/javascript") {
+			mimeType += "; charset=utf-8";
+		}
+
+		//get the value from the KV store and return it if found
+		const value = await env.assets.get(key, 'arrayBuffer')
+		if(!value){
+			return new Response("Not found", {
+				status: 404
+			})
+		}
+		return new Response(value, {
+			status: 200,
+			headers: new Headers({
+				"Content-Type": mimeType
+			})
+		});
+	},
+} satisfies ExportedHandler<Env>;
+```
+
+This new code provides a specific endpoint, `/hello-world`, which will provide translated responses. When this URL is accessed, our Worker code will first retrieve the language that is requested by the client in the `Accept-Language` request header and the translations from our KV store for the `hello-world.json` key. It then gets the translated message and returns the generated HTML.
+
+```sh
+npx wrangler dev --remote
+```
+
+With the Worker code running, we can notice that our application is now returning the properly translated "Hello World" message. From your browser's developer console, change the locale language (on Chromium browsers, Run `Show Sensors` to get a dropdown selection for locales).
+
+## 6. Deploy your project
+
+Run `wrangler deploy` to deploy your Workers project to Cloudflare with the binding to the KV namespace.
+
+```sh
+npx wrangler deploy
+```
+
+Wrangler will automatically set your KV binding to use the production KV namespace set in our Wrangler file with the KV namespace id. Throughout this example, we uploaded our assets to both the preview and the production KV namespaces.
+
+We can now verify that our project is properly working by accessing our Workers default hostname and accessing `<WORKER-SUBDOMAIN>.<DEFAULT-ACCOUNT-HOSTNAME>.dev/index.html` or `<WORKER-SUBDOMAIN>.<DEFAULT-ACCOUNT-HOSTNAME>.dev/hello-world` to see our deployed Worker in action, generating responses from the values in our KV store.
+
+## Related resources
+
+- [Rust support in Workers](/workers/languages/rust/).
+- [Using KV in Workers](/kv/get-started/).
+
+---
+
+# Write key-value pairs
+
+URL: https://developers.cloudflare.com/kv/api/write-key-value-pairs/
+
+To create a new key-value pair, or to update the value for a particular key, call the `put()` method of the [KV binding](/kv/concepts/kv-bindings/) on any [KV namespace](/kv/concepts/kv-namespaces/) you have bound to your Worker code:
+
+```js
+env.NAMESPACE.put(key, value);
+```
+
+#### Example
+
+An example of writing a key-value pair from within a Worker:
+
+```js
+export default {
+	async fetch(request, env, ctx) {
+		try {
+			await env.NAMESPACE.put("first-key", "This is the value for the key");
+
+			return new Response("Successful write", {
+				status: 201,
+			});
+		} catch (e) {
+			return new Response(e.message, { status: 500 });
+		}
+	},
+};
+```
+
+## Reference
+
+The following method is provided to write to KV:
+
+- [put()](#put-method)
+
+### `put()` method
+
+To create a new key-value pair, or to update the value for a particular key, call the `put()` method on any KV namespace you have bound to your Worker code:
+
+```js
+env.NAMESPACE.put(key, value, options?);
+```
+
+#### Parameters
+
+- `key`: `string`
+  - The key to associate with the value. A key cannot be empty or be exactly equal to `.` or `..`. All other keys are valid. Keys have a maximum length of 512 bytes.
+- `value`: `string` | `ReadableStream` | `ArrayBuffer`
+
+  - The value to store. The type is inferred. The maximum size of a value is 25 MiB.
+
+- `options`: `{
+  expiration?: number,
+  expirationTtl?: number,
+  metadata?: object
+}`
+  - Optional. An object containing the `expiration` (optional), `expirationTtl` (optional), and `metadata` (optional) attributes.
+    - `expiration` is the number that represents when to expire the key-value pair in seconds since epoch.
+    - `expirationTtl` is the number that represents when to expire the key-value pair in seconds from now. The minimum value is 60.
+    - `metadata` is an object that must serialize to JSON. The maximum size of the serialized JSON representation of the metadata object is 1024 bytes.
+
+#### Response
+
+- `response`: `Promise<void>`
+  - A `Promise` that resolves if the update is successful.
+
+The put() method returns a Promise that you should `await` on to verify a successful update.
+
+## Guidance
+
+### Concurrent writes to the same key
+
+Due to the eventually consistent nature of KV, concurrent writes to the same key can end up overwriting one another. It is a common pattern to write data from a single process with Wrangler or the API. This avoids competing concurrent writes because of the single stream. All data is still readily available within all Workers bound to the namespace.
+
+If concurrent writes are made to the same key, the last write will take precedence.
+
+Writes are immediately visible to other requests in the same global network location, but can take up to 60 seconds (or the value of the `cacheTtl` parameter of the `get()` or `getWithMetadata()` methods) to be visible in other parts of the world.
+
+Refer to [How KV works](/kv/concepts/how-kv-works/) for more information on this topic.
+
+### Write data in bulk
+
+Write more than one key-value pair at a time with Wrangler or [via the REST API](/api/resources/kv/subresources/namespaces/methods/bulk_update/).
+
+The bulk API can accept up to 10,000 KV pairs at once.
+
+A `key` and a `value` are required for each KV pair. The entire request size must be less than 100 megabytes. Bulk writes are not supported using the [KV binding](/kv/concepts/kv-bindings/).
+
+### Expiring keys
+
+KV offers the ability to create keys that automatically expire. You may configure expiration to occur either at a particular point in time (using the `expiration` option), or after a certain amount of time has passed since the key was last modified (using the `expirationTtl` option).
+
+Once the expiration time of an expiring key is reached, it will be deleted from the system. After its deletion, attempts to read the key will behave as if the key does not exist. The deleted key will not count against the KV namespaceâ€™s storage usage for billing purposes.
+
+:::note
+
+An `expiration` setting on a key will result in that key being deleted, even in cases where the `cacheTtl` is set to a higher (longer duration) value. Expiration always takes precedence.
+
+:::
+
+There are two ways to specify when a key should expire:
+
+- Set a key's expiration using an absolute time specified in a number of [seconds since the UNIX epoch](https://en.wikipedia.org/wiki/Unix_time). For example, if you wanted a key to expire at 12:00AM UTC on April 1, 2019, you would set the keyâ€™s expiration to `1554076800`.
+
+- Set a key's expiration time to live (TTL) using a relative number of seconds from the current time. For example, if you wanted a key to expire 10 minutes after creating it, you would set its expiration TTL to `600`.
+
+Expiration targets that are less than 60 seconds into the future are not supported. This is true for both expiration methods.
+
+#### Create expiring keys
+
+To create expiring keys, set `expiration` in the `put()` options to a number representing the seconds since epoch, or set `expirationTtl` in the `put()` options to a number representing the seconds from now:
+
+```js
+await env.NAMESPACE.put(key, value, {
+	expiration: secondsSinceEpoch,
+});
+
+await env.NAMESPACE.put(key, value, {
+	expirationTtl: secondsFromNow,
+});
+```
+
+These assume that `secondsSinceEpoch` and `secondsFromNow` are variables defined elsewhere in your Worker code.
+
+### Metadata
+
+To associate metadata with a key-value pair, set `metadata` in the `put()` options to an object (serializable to JSON):
+
+```js
+await env.NAMESPACE.put(key, value, {
+	metadata: { someMetadataKey: "someMetadataValue" },
+});
+```
+
+### Limits to KV writes to the same key
+
+Workers KV has a maximum of 1 write to the same key per second. Writes made to the same key within 1 second will cause rate limiting (`429`) errors to be thrown.
+
+You should not write more than once per second to the same key. Consider consolidating your writes to a key within a Worker invocation to a single write, or wait at least 1 second between writes.
+
+The following example serves as a demonstration of how multiple writes to the same key may return errors by forcing concurrent writes within a single Worker invocation. This is not a pattern that should be used in production.
+
+```typescript
+export default {
+	async fetch(request, env, ctx): Promise<Response> {
+		// Rest of code omitted
+		const key = "common-key";
+		const parallelWritesCount = 20;
+
+		// Helper function to attempt a write to KV and handle errors
+		const attemptWrite = async (i: number) => {
+			try {
+				await env. YOUR_KV_NAMESPACE.put(key, `Write attempt #${i}`);
+				return { attempt: i, success: true };
+			} catch (error) {
+				// An error may be thrown if a write to the same key is made within 1 second with a message. For example:
+				// error: {
+				//	"message": "KV PUT failed: 429 Too Many Requests"
+				// }
+
+				return {
+					attempt: i,
+					success: false,
+					error: { message: (error as Error).message },
+				};
+			}
+		};
+
+		// Send all requests in parallel and collect results
+		const results = await Promise.all(
+			Array.from({ length: parallelWritesCount }, (_, i) =>
+				attemptWrite(i + 1),
+			),
+		);
+		// Results will look like:
+		// [
+		// 	  {
+		// 		  "attempt": 1,
+		// 		  "success": true
+		// 	  },
+		//    {
+		// 		  "attempt": 2,
+		// 		  "success": false,
+		// 		  "error": {
+		// 			  "message": "KV PUT failed: 429 Too Many Requests"
+		// 		  }
+		// 	  },
+		// 	  ...
+		// ]
+
+		return new Response(JSON.stringify(results), {
+			headers: { "Content-Type": "application/json" },
+		});
+	},
+};
+```
+
+To handle these errors, we recommend implementing a retry logic, with exponential backoff. Here is a simple approach to add retries to the above code.
+
+```typescript
+export default {
+	async fetch(request, env, ctx): Promise<Response> {
+		// Rest of code omitted
+		const key = "common-key";
+		const parallelWritesCount = 20;
+
+		// Helper function to attempt a write to KV with retries
+		const attemptWrite = async (i: number) => {
+			return await retryWithBackoff(async () => {
+				await env.YOUR_KV_NAMESPACE.put(key, `Write attempt #${i}`);
+				return { attempt: i, success: true };
+			});
+		};
+
+		// Send all requests in parallel and collect results
+		const results = await Promise.all(
+			Array.from({ length: parallelWritesCount }, (_, i) =>
+				attemptWrite(i + 1),
+			),
+		);
+
+		return new Response(JSON.stringify(results), {
+			headers: { "Content-Type": "application/json" },
+		});
+	},
+};
+
+async function retryWithBackoff(
+	fn: Function,
+	maxAttempts = 5,
+	initialDelay = 1000,
+) {
+	let attempts = 0;
+	let delay = initialDelay;
+
+	while (attempts < maxAttempts) {
+		try {
+			// Attempt the function
+			return await fn();
+		} catch (error) {
+			// Check if the error is a rate limit error
+			if (
+				(error as Error).message.includes(
+					"KV PUT failed: 429 Too Many Requests",
+				)
+			) {
+				attempts++;
+				if (attempts >= maxAttempts) {
+					throw new Error("Max retry attempts reached");
+				}
+
+				// Wait for the backoff period
+				console.warn(`Attempt ${attempts} failed. Retrying in ${delay} ms...`);
+				await new Promise((resolve) => setTimeout(resolve, delay));
+
+				// Exponential backoff
+				delay *= 2;
+			} else {
+				// If it's a different error, rethrow it
+				throw error;
+			}
+		}
+	}
+}
+```
+
+## Other methods to access KV
+
+You can also [write key-value pairs from the command line with Wrangler](/kv/reference/kv-commands/#kv-namespace-create) and [write data via the REST API](/api/resources/kv/subresources/namespaces/subresources/values/methods/update/).
+
+---
+
+# Key concepts
+
+URL: https://developers.cloudflare.com/kv/concepts/
+
+import { DirectoryListing } from "~/components";
+
+<DirectoryListing />
+
+---
+
+# KV bindings
+
+URL: https://developers.cloudflare.com/kv/concepts/kv-bindings/
+
+import { WranglerConfig } from "~/components";
+
+KV [bindings](/workers/runtime-apis/bindings/) allow for communication between a Worker and a KV namespace.
+
+Configure KV bindings in the [Wrangler configuration file](/workers/wrangler/configuration/).
+
+## Access KV from Workers
+
+A [KV namespace](/kv/concepts/kv-namespaces/) is a key-value database replicated to Cloudflare's global network.
+
+To connect to a KV namespace from within a Worker, you must define a binding that points to the namespace's ID.
+
+The name of your binding does not need to match the KV namespace's name. Instead, the binding should be a valid JavaScript identifier, because the identifier will exist as a global variable within your Worker.
+
+A KV namespace will have a name you choose (for example, `My tasks`), and an assigned ID (for example, `06779da6940b431db6e566b4846d64db`).
+
+To execute your Worker, define the binding.
+
+In the following example, the binding is called `TODO`. In the `kv_namespaces` portion of your Wrangler configuration file, add:
+
+<WranglerConfig>
+
+```toml
+name = "worker"
+
+# ...
+
+kv_namespaces = [
+  { binding = "TODO", id = "06779da6940b431db6e566b4846d64db" }
+]
+```
+
+</WranglerConfig>
+
+With this, the deployed Worker will have a `TODO` field in their environment object (the second parameter of the `fetch()` request handler). Any methods on the `TODO` binding will map to the KV namespace with an ID of `06779da6940b431db6e566b4846d64db` â€“ which you called `My Tasks` earlier.
+
+```js
+export default {
+	async fetch(request, env, ctx) {
+		// Get the value for the "to-do:123" key
+		// NOTE: Relies on the `TODO` KV binding that maps to the "My Tasks" namespace.
+		let value = await env.TODO.get("to-do:123");
+
+		// Return the value, as is, for the Response
+		return new Response(value);
+	},
+};
+```
+
+## Use KV bindings when developing locally
+
+When you use Wrangler to develop locally with the `wrangler dev` command, Wrangler will default to using a local version of KV to avoid interfering with any of your live production data in KV. This means that reading keys that you have not written locally will return `null`.
+
+To have `wrangler dev` connect to your Workers KV namespace running on Cloudflare's global network, call `wrangler dev --remote` instead. This will use the `preview_id` of the KV binding configuration in the Wrangler file. This is how a Wrangler file looks with the `preview_id` specified.
+
+
+
+<WranglerConfig>
+
+```toml title="wrangler.toml"
+name = "worker"
+
+# ...
+
+kv_namespaces = [
+  { binding = "TODO", id = "06779da6940b431db6e566b4846d64db", preview_id="06779da6940b431db6e566b484a6a769a7a" }
+]
+```
+
+</WranglerConfig>
+
+## Access KV from Durable Objects and Workers using ES modules format
+
+[Durable Objects](/durable-objects/) use ES modules format. Instead of a global variable, bindings are available as properties of the `env` parameter [passed to the constructor](/durable-objects/get-started/tutorial/#3-write-a-durable-object-class).
+
+An example might look like:
+
+```js
+export class DurableObject {
+	constructor(state, env) {
+		this.state = state;
+		this.env = env;
+	}
+
+	async fetch(request) {
+		const valueFromKV = await this.env.NAMESPACE.get("someKey");
+		return new Response(valueFromKV);
+	}
+}
+```
+
+---
+
+# KV namespaces
+
+URL: https://developers.cloudflare.com/kv/concepts/kv-namespaces/
+
+import { Type, MetaInfo, WranglerConfig } from "~/components";
+
+A KV namespace is a key-value database replicated to Cloudflareâ€™s global network.
+
+Bind your KV namespaces through Wrangler or via the Cloudflare dashboard.
+
+:::note
+
+KV namespace IDs are public and bound to your account.
+
+:::
+
+## Bind your KV namespace through Wrangler
+
+To bind KV namespaces to your Worker, assign an array of the below object to the `kv_namespaces` key.
+
+* `binding` <Type text="string" /> <MetaInfo text="required" />
+
+  * The binding name used to refer to the KV namespace.
+
+* `id` <Type text="string" /> <MetaInfo text="required" />
+
+  * The ID of the KV namespace.
+
+* `preview_id` <Type text="string" /> <MetaInfo text="optional" />
+
+  * The ID of the KV namespace used during `wrangler dev`.
+
+Example:
+
+<WranglerConfig>
+
+```toml title="wrangler.toml"
+kv_namespaces = [
+  { binding = "<TEST_NAMESPACE>", id = "<TEST_ID>" }
+]
+```
+
+</WranglerConfig>
+
+## Bind your KV namespace via the dashboard
+
+To bind the namespace to your Worker in the Cloudflare dashboard:
+
+1. Log in to the [Cloudflare dashboard](https://dash.cloudflare.com).
+2. Go to **Workers & Pages**.
+3. Select your **Worker**.
+4. Select **Settings** > **Bindings**.
+5. Select **Add**.
+6. Select **KV Namespace**.
+7. Enter your desired variable name (the name of the binding).
+8. Select the KV namespace you wish to bind the Worker to.
+9. Select **Deploy**.
+
+---
+
+# Observability
+
+URL: https://developers.cloudflare.com/kv/observability/
+
+import { DirectoryListing } from "~/components"
+
+<DirectoryListing />
+
+---
+
+# Metrics and analytics
+
+URL: https://developers.cloudflare.com/kv/observability/metrics-analytics/
+
+KV exposes analytics that allow you to inspect requests and storage across all namespaces in your account.
+
+The metrics displayed in the [Cloudflare dashboard](https://dash.cloudflare.com/) charts are queried from Cloudflareâ€™s [GraphQL Analytics API](/analytics/graphql-api/). You can access the metrics [programmatically](#query-via-the-graphql-api) via GraphQL or HTTP client.
+
+## Metrics
+
+KV currently exposes the below metrics:
+
+| Dataset   | GraphQL Dataset Name      | Description                                                                   |
+| ----------------------- | --------------------------- | ------------------------------------------------------------- |
+| Operations              | `kvOperationsAdaptiveGroups`| This dataset consists of the operations made to your KV namespaces.   |
+| Storage                 | `kvStorageAdaptiveGroups`   | This dataset consists of the storage details of your KV namespaces.   |
+
+Metrics can be queried (and are retained) for the past 31 days.
+
+## View metrics in the dashboard
+
+Per-namespace analytics for KV are available in the Cloudflare dashboard. To view current and historical metrics for a database:
+
+1. Log in to the [Cloudflare dashboard](https://dash.cloudflare.com) and select your account.
+2. Go to [**Workers & Pages** > **KV**](https://dash.cloudflare.com/?to=/:account/workers/kv/namespaces).
+3. Select an existing namespace.
+4. Select the **Metrics** tab.
+
+You can optionally select a time window to query. This defaults to the last 24 hours.
+
+## Query via the GraphQL API
+
+You can programmatically query analytics for your KV namespaces via the [GraphQL Analytics API](/analytics/graphql-api/). This API queries the same datasets as the Cloudflare dashboard, and supports GraphQL [introspection](/analytics/graphql-api/features/discovery/introspection/).
+
+To get started using the [GraphQL Analytics API](/analytics/graphql-api/), follow the documentation to setup [Authentication for the GraphQL Analytics API](/analytics/graphql-api/getting-started/authentication/).
+
+To use the GraphQL API to retrieve KV's datasets, you must provide the `accountTag` filter with your Cloudflare Account ID. The GraphQL datasets for KV include:
+
+- `kvOperationsAdaptiveGroups`
+- `kvStorageAdaptiveGroups`
+
+### Examples
+
+The following are common GraphQL queries that you can use to retrieve information about KV analytics. These queries make use of variables `$accountTag`, `$date_geq`, `$date_leq`, and `$namespaceId`, which should be set as GraphQL variables or replaced in line. These variables should look similar to these:
+
+```json
+{
+    "accountTag":"<YOUR_ACCOUNT_ID>",
+    "namespaceId": "<YOUR_KV_NAMESPACE_ID>",
+    "date_geq": "2024-07-15",
+    "date_leq": "2024-07-30"
+}
+```
+
+#### Operations
+
+To query the sum of read, write, delete, and list operations for a given `namespaceId` and for a given date range (`date_geq` and `date_leq`), grouped by `date` and `actionType`:
+
+```graphql
+query {
+    viewer {
+        accounts(filter: { accountTag: $accountTag }) {
+            kvOperationsAdaptiveGroups(
+                filter: { namespaceId: $namespaceId, date_geq: $date_geq, date_leq: $date_leq }
+                limit: 10000
+				orderBy: [date_DESC]
+            ) {
+                sum {
+                    requests
+                }
+                dimensions {
+                    date
+                    actionType
+                }
+            }
+        }
+    }
+}
+```
+
+
+To query the distribution of the latency for read operations for a given `namespaceId` within a given date range (`date_geq`, `date_leq`):
+
+```graphql
+query {
+    viewer {
+        accounts(filter: { accountTag: $accountTag }) {
+            kvOperationsAdaptiveGroups(
+                filter: { namespaceId: $namespaceId, date_geq: $date_geq, date_leq: $date_leq, actionType: "read" }
+                limit: 10000
+            ) {
+                sum {
+                    requests
+                }
+                dimensions {
+                    actionType
+                }
+                quantiles {
+                    latencyMsP25
+                    latencyMsP50
+                    latencyMsP75
+                    latencyMsP90
+                    latencyMsP99
+                    latencyMsP999
+                }
+            }
+        }
+    }
+}
+```
+
+To query your account-wide read, write, delete, and list operations across all KV namespaces:
+
+```graphql
+query {
+    viewer {
+        accounts(filter: { accountTag: $accountTag }) {
+            kvOperationsAdaptiveGroups(filter: { date_geq: $date_geq, date_leq: $date_leq  }, limit: 10000) {
+                sum {
+                    requests
+                }
+                dimensions {
+                    actionType
+                }
+            }
+        }
+    }
+}
+```
+
+#### Storage
+
+To query the storage details (`keyCount` and `byteCount`) of a KV namespace for every day of a given date range:
+
+```graphql
+query Viewer {
+    viewer {
+        accounts(filter: { accountTag: $accountTag }) {
+            kvStorageAdaptiveGroups(
+                filter: { date_geq: $date_geq, date_leq: $date_leq, namespaceId: $namespaceId }
+                limit: 10000
+                orderBy: [date_DESC]
+            ) {
+                max {
+                    keyCount
+                    byteCount
+                }
+                dimensions {
+                    date
+                }
+            }
+        }
+    }
+}
+```
+
+---
+
+# Platform
+
+URL: https://developers.cloudflare.com/kv/platform/
+
+import { DirectoryListing } from "~/components";
+
+<DirectoryListing />
+
+---
+
+# Limits
+
+URL: https://developers.cloudflare.com/kv/platform/limits/
+
+import { Render } from "~/components"
+
+| Feature                           | Free                  | Paid         |
+| --------------------------------- | --------------------- | ------------ |
+| Reads                             | 100,000 reads per day | Unlimited    |
+| Writes to different keys          | 1,000 writes per day  | Unlimited    |
+| Writes to same key                | 1 per second          | 1 per second |
+| Operations/Worker invocation [^1] | 1000                  | 1000         |
+| Namespaces                        | 1000                  | 1000         |
+| Storage/account                   | 1 GB                  | Unlimited    |
+| Storage/namespace                 | 1 GB                  | Unlimited    |
+| Keys/namespace                    | Unlimited             | Unlimited    |
+| Key size                          | 512 bytes             | 512 bytes    |
+| Key metadata                      | 1024 bytes            | 1024 bytes   |
+| Value size                        | 25 MiB                | 25 MiB       |
+| Minimum [`cacheTtl`](/kv/api/read-key-value-pairs/#cachettl-parameter)         | 60 seconds            | 60 seconds   |
+
+[^1]: Within a single invocation, a Worker can make up to 1,000 operations to external services (for example, 500 Workers KV reads and 500 R2 reads).
+
+<Render file="limits_increase" product="workers" />
+
+:::note[Free versus Paid plan pricing]
+
+Refer to [KV pricing](/kv/platform/pricing/) to review the specific KV operations you are allowed under each plan with their pricing.
+
+:::
+
+:::note[Workers KV REST API limits]
+
+Using the REST API to access Cloudflare Workers KV is subject to the [rate limits that apply to all operations of the Cloudflare REST API](/fundamentals/api/reference/limits).
+
+:::
+
+---
+
+# Pricing
+
+URL: https://developers.cloudflare.com/kv/platform/pricing/
+
+import { Render } from "~/components"
+
+<Render file="kv_pricing" product="workers" />
+
+## Pricing FAQ
+
+### When writing via KV's [REST API](/api/resources/kv/subresources/namespaces/methods/bulk_update/), how are writes charged?
+
+Each key-value pair in the `PUT` request is counted as a single write, identical to how each call to `PUT` in the Workers API counts as a write. Writing 5,000 keys via the REST API incurs the same write costs as making 5,000 `PUT` calls in a Worker.
+
+### Do queries I issue from the dashboard or wrangler (the CLI) count as billable usage?
+
+Yes, any operations via the Cloudflare dashboard or wrangler, including updating (writing) keys, deleting keys, and listing the keys in a namespace count as billable KV usage.
+
+### Does Workers KV charge for data transfer / egress?
+
+No.
+
+---
+
+# Release notes
+
+URL: https://developers.cloudflare.com/kv/platform/release-notes/
+
+import { ProductReleaseNotes } from "~/components";
+
+{/* Actual content lives in /src/content/release-notes/kv.yaml. Update the file there for new entries to appear here. For more details, refer to https://developers.cloudflare.com/style-guide/documentation-content-strategy/content-types/changelog/#yaml-file */}
+
+<ProductReleaseNotes />
+
+---
+
+# Data security
+
+URL: https://developers.cloudflare.com/kv/reference/data-security/
+
+This page details the data security properties of KV, including:
+
+* Encryption-at-rest (EAR).
+* Encryption-in-transit (EIT).
+* Cloudflare's compliance certifications.
+
+## Encryption at Rest
+
+All values stored in KV are encrypted at rest. Encryption and decryption are automatic, do not require user configuration to enable, and do not impact the effective performance of KV.
+
+Values are only decrypted by the process executing your Worker code or responding to your API requests.
+
+Encryption keys are managed by Cloudflare and securely stored in the same key management systems we use for managing encrypted data across Cloudflare internally.
+
+Objects are encrypted using [AES-256](https://www.cloudflare.com/learning/ssl/what-is-encryption/), a widely tested, highly performant and industry-standard encryption algorithm. KV uses GCM (Galois/Counter Mode) as its preferred mode.
+
+## Encryption in Transit
+
+Data transfer between a Cloudflare Worker, and/or between nodes within the Cloudflare network and KV is secured using the same [Transport Layer Security](https://www.cloudflare.com/learning/ssl/transport-layer-security-tls/) (TLS/SSL).
+
+API access via the HTTP API or using the [wrangler](/workers/wrangler/install-and-update/) command-line interface is also over TLS/SSL (HTTPS).
+
+## Compliance
+
+To learn more about Cloudflare's adherence to industry-standard security compliance certifications, refer to Cloudflare's [Trust Hub](https://www.cloudflare.com/trust-hub/compliance-resources/).
+
+---
+
+# Environments
+
+URL: https://developers.cloudflare.com/kv/reference/environments/
+
+import { WranglerConfig } from "~/components";
+
+KV namespaces can be used with [environments](/workers/wrangler/environments/). This is useful when you have code in your Worker that refers to a KV binding like `MY_KV`, and you want to have these bindings point to different KV namespaces (for example, one for staging and one for production).
+
+The following code in the Wrangler file shows you how to have two environments that have two different KV namespaces but the same binding name:
+
+<WranglerConfig>
+
+```toml
+[env.staging]
+kv_namespaces = [
+  { binding = "MY_KV", id = "e29b263ab50e42ce9b637fa8370175e8" }
+]
+
+[env.production]
+kv_namespaces = [
+  { binding = "MY_KV", id = "a825455ce00f4f7282403da85269f8ea" }
+]
+```
+
+</WranglerConfig>
+
+Using the same binding name for two different KV namespaces keeps your Worker code more readable.
+
+In the `staging` environment, `MY_KV.get("KEY")` will read from the namespace ID `e29b263ab50e42ce9b637fa8370175e8`. In the `production` environment, `MY_KV.get("KEY")` will read from the namespace ID `a825455ce00f4f7282403da85269f8ea`.
+
+To insert a value into a `staging` KV namespace, run:
+
+```sh
+wrangler kv key put --env=staging --binding=<YOUR_BINDING> "<KEY>" "<VALUE>"
+```
+
+Since `--namespace-id` is always unique (unlike binding names), you do not need to specify an `--env` argument:
+
+```sh
+wrangler kv key put --namespace-id=<YOUR_ID> "<KEY>" "<VALUE>"
+```
+
+:::caution
+
+Since version 3.60.0, Wrangler KV commands support the `kv ...` syntax. If you are using versions of Wrangler below 3.60.0, the command follows the `kv:...` syntax. Learn more about the deprecation of the `kv:...` syntax in the [Wrangler commands](/kv/reference/kv-commands/) for KV page.
+:::
+
+Most `kv` subcommands also allow you to specify an environment with the optional `--env` flag.
+
+Specifying an environment with the optional `--env` flag allows you to publish Workers running the same code but with different KV namespaces.
+
+For example, you could use separate staging and production KV namespaces for KV data in your Wrangler file:
+
+
+
+<WranglerConfig>
+
+```toml
+type = "webpack"
+name = "my-worker"
+account_id = "<account id here>"
+route = "staging.example.com/*"
+workers_dev = false
+
+kv_namespaces = [
+  { binding = "MY_KV", id = "06779da6940b431db6e566b4846d64db" }
+]
+
+[env.production]
+route = "example.com/*"
+kv_namespaces = [
+  { binding = "MY_KV", id = "07bc1f3d1f2a4fd8a45a7e026e2681c6" }
+]
+```
+
+</WranglerConfig>
+
+With the Wrangler file above, you can specify `--env production` when you want to perform a KV action on the KV namespace `MY_KV` under `env.production`.
+
+For example, with the Wrangler file above, you can get a value out of a production KV instance with:
+
+```sh
+wrangler kv key get --binding "MY_KV" --env=production "<KEY>"
+```
+
+---
+
+# FAQ
+
+URL: https://developers.cloudflare.com/kv/reference/faq/
+
+import { Glossary } from "~/components"
+
+Frequently asked questions regarding Workers KV.
+
+## General
+
+### Can I use Workers KV without using Workers?
+
+Yes, you can use Workers KV outside of Workers by using the [REST API](/api/resources/kv/) or the associated Cloudflare SDKs for the REST API. It is important to note the [limits of the REST API](/fundamentals/api/reference/limits/) that apply.
+
+### Why can I not immediately see the updated value of a key-value pair?
+
+Workers KV heavily caches data across the Cloudflare network. Therefore, it is possible that you read a cached value for up to the [cache TTL](/kv/api/read-key-value-pairs/#cachettl-parameter) duration.
+
+### Is Workers KV eventually consistent or strongly consistent?
+
+Workers KV is eventually consistent.
+
+Workers KV stores data in central stores and replicates the data to all Cloudflare locations through a hybrid push/pull replication approach. This means that the previous value of the key-value pair may be seen in a location for as long as the [cache TTL](/kv/api/read-key-value-pairs/#cachettl-parameter). This means that Workers KV is eventually consistent.
+
+Refer to [How KV works](/kv/concepts/how-kv-works/).
+
+## Pricing
+
+### When writing via Workers KV's [REST API](/api/resources/kv/subresources/namespaces/methods/bulk_update/), how are writes charged?
+
+Each key-value pair in the `PUT` request is counted as a single write, identical to how each call to `PUT` in the Workers API counts as a write. Writing 5,000 keys via the REST API incurs the same write costs as making 5,000 `PUT` calls in a Worker.
+
+### Do queries I issue from the dashboard or wrangler (the CLI) count as billable usage?
+
+Yes, any operations via the Cloudflare dashboard or wrangler, including updating (writing) keys, deleting keys, and listing the keys in a namespace count as billable Workers KV usage.
+
+### Does Workers KV charge for data transfer / egress?
+
+No.
+
+---
+
+# Reference
+
+URL: https://developers.cloudflare.com/kv/reference/
+
+import { DirectoryListing } from "~/components";
+
+<DirectoryListing />
+
+---
+
+# Wrangler KV commands
+
+URL: https://developers.cloudflare.com/kv/reference/kv-commands/
+
+import {Render} from "~/components"
+
+<Render file="wrangler-commands/kv" product="workers"/>
+
+## Deprecations
+
+Below are deprecations to Wrangler commands for Workers KV.
+
+### `kv:...` syntax deprecation
+
+Since version 3.60.0, Wrangler supports the `kv ...` syntax. If you are using versions below 3.60.0, the command follows the `kv:...` syntax.
+
+The `kv:...` syntax is deprecated in versions 3.60.0 and beyond and will be removed in a future major version.
+
+For example, commands using the `kv ...` syntax look as such:
+
+```sh
+wrangler kv namespace list
+wrangler kv key get <KEY>
+wrangler kv bulk put <FILENAME>
+```
+
+The same commands using the `kv:...` syntax look as such:
+
+```sh
+wrangler kv:namespace list
+wrangler kv:key get <KEY>
+wrangler kv:bulk put <FILENAME>
+```
+
+---
+
+# Tutorials
+
+URL: https://developers.cloudflare.com/kv/tutorials/
+
+import { GlossaryTooltip, ListTutorials } from "~/components"
+
+View <GlossaryTooltip term="tutorial">tutorials</GlossaryTooltip> to help you get started with KV.
+
+<ListTutorials />
+
+---

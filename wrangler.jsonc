@@ -31,6 +31,20 @@
     "binding": "IMAGES"
   },
 
+  "unsafe": {
+    "bindings": [
+      {
+        "name": "RL_FETCH_HOSTNAME",
+        "type": "ratelimit",
+        "namespace_id": "1001", // a positive integer that uniquely defines this rate limiting configuration
+        "simple": {
+          "limit": 60,
+          "period": 60
+        }
+      }
+    ]
+  },
+
   /**
    * Environment Variables
    * https://developers.cloudflare.com/workers/wrangler/configuration/#environment-variables

@@ -1,7 +1,5 @@
 import type { RouteConfig, RouteHandler } from '@hono/zod-openapi'
-import type { DBService } from './services/db.service'
-import type { ImageService } from './services/image.service'
-import type { StorageService } from './services/storage.service'
+import type { DBService, FetchService, ImageService, StorageService } from './services'
 
 // Define extended Hono environment with our services
 export interface AppEnv {
@@ -10,6 +8,7 @@ export interface AppEnv {
     db: DBService
     storage: StorageService
     image: ImageService
+    fetch: FetchService
     userId: string
     projectId: string
   }

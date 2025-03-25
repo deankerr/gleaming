@@ -12,6 +12,7 @@ import { serveEmojiFavicon } from './middleware/serve-emoji-favicon'
 import { apiRouter } from './routes/api'
 import { devRouter } from './routes/dev'
 import { fileRouter } from './routes/file'
+import { FetchService } from './services'
 import { DBService } from './services/db.service'
 import { ImageService } from './services/image.service'
 import { StorageService } from './services/storage.service'
@@ -26,12 +27,13 @@ app.use('*', async (c, next) => {
   const dbService = new DBService(c.env.DB)
   const storageService = new StorageService(c.env.BUCKET)
   const imageService = new ImageService(c.env.IMAGES)
+  const fetchService = new FetchService(c.env.RL_FETCH_HOSTNAME, new URL(c.req.url).hostname)
 
   // Attach services to context
   c.set('db', dbService)
   c.set('storage', storageService)
   c.set('image', imageService)
-
+  c.set('fetch', fetchService)
   await next()
 })
 

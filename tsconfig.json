@@ -6,7 +6,7 @@
     "lib": ["ESNext"],
     "module": "ESNext",
     "moduleResolution": "Bundler",
-    "types": ["./worker-configuration.d.ts", "node", "bun"],
+    "types": ["./worker-configuration.d.ts", "@cloudflare/vitest-pool-workers", "node", "bun"],
     "strict": true,
     "skipLibCheck": true
   }
