@@ -20,6 +20,9 @@ importers:
       drizzle-orm:
         specifier: ^0.41.0
         version: 0.41.0(@cloudflare/workers-types@4.20250319.0)(@libsql/client@0.15.0)(better-sqlite3@11.9.1)(bun-types@1.2.5)(gel@2.0.1)
+      drizzle-zod:
+        specifier: ^0.7.0
+        version: 0.7.0(drizzle-orm@0.41.0(@cloudflare/workers-types@4.20250319.0)(@libsql/client@0.15.0)(better-sqlite3@11.9.1)(bun-types@1.2.5)(gel@2.0.1))(zod@3.24.2)
       hono:
         specifier: ^4.7.5
         version: 4.7.5
@@ -1552,6 +1555,12 @@ packages:
         optional: true
       sqlite3:
         optional: true
+
+  drizzle-zod@0.7.0:
+    resolution: {integrity: sha512-xgCRYYVEzRkeXTS33GSMgoowe3vKsMNBjSI+cwG1oLQVEhAWWbqtb/AAMlm7tkmV4fG/uJjEmWzdzlEmTgWOoQ==}
+    peerDependencies:
+      drizzle-orm: '>=0.36.0'
+      zod: '>=3.0.0'
 
   electron-to-chromium@1.5.123:
     resolution: {integrity: sha512-refir3NlutEZqlKaBLK0tzlVLe5P2wDKS7UQt/3SpibizgsRAPOsqQC3ffw1nlv3ze5gjRQZYHoPymgVZkplFA==}
@@ -4233,6 +4242,11 @@ snapshots:
       better-sqlite3: 11.9.1
       bun-types: 1.2.5
       gel: 2.0.1
+
+  drizzle-zod@0.7.0(drizzle-orm@0.41.0(@cloudflare/workers-types@4.20250319.0)(@libsql/client@0.15.0)(better-sqlite3@11.9.1)(bun-types@1.2.5)(gel@2.0.1))(zod@3.24.2):
+    dependencies:
+      drizzle-orm: 0.41.0(@cloudflare/workers-types@4.20250319.0)(@libsql/client@0.15.0)(better-sqlite3@11.9.1)(bun-types@1.2.5)(gel@2.0.1)
+      zod: 3.24.2
 
   electron-to-chromium@1.5.123: {}
 

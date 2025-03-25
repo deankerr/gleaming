@@ -1,5 +1,7 @@
 import type { AppEnv } from '../types'
 import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi'
+import { createSelectSchema } from 'drizzle-zod'
+import { schema } from '../db/schema'
 import { getFileInfo } from '../handlers/files/info'
 import { ingestImage } from '../handlers/files/ingest'
 import { uploadImage } from '../handlers/files/upload'
@@ -16,38 +18,7 @@ const ErrorSchema = z
   })
   .openapi('Error')
 
-const ImageSchema = z
-  .object({
-    id: z.string().openapi({
-      example: '01HPDQ5GXCVBNMTP7VJVDBK3NR',
-    }),
-    slug: z.string().openapi({
-      example: 'ltspei2xq-my-image',
-    }),
-    contentHash: z.string().openapi({
-      example: 'abc123def456',
-    }),
-    contentType: z.string().openapi({
-      example: 'image/jpeg',
-    }),
-    size: z.number().int().positive().openapi({
-      example: 102400,
-    }),
-    metadata: z
-      .object({
-        width: z.number().int().positive().optional(),
-        height: z.number().int().positive().optional(),
-        format: z.string().optional(),
-      })
-      .optional()
-      .openapi({
-        example: { width: 800, height: 600, format: 'jpeg' },
-      }),
-    createdAt: z.string().datetime().openapi({
-      example: '2025-01-01T00:00:00Z',
-    }),
-  })
-  .openapi('Image')
+const ImageSchema = createSelectSchema(schema.files)
 
 // Direct file upload schema
 const UploadImageSchema = z
@@ -98,9 +69,6 @@ const uploadImageRoute = createRoute({
   request: {
     body: {
       content: {
-        'application/json': {
-          schema: UploadImageSchema,
-        },
         'multipart/form-data': {
           schema: UploadImageSchema,
         },

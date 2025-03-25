@@ -2,7 +2,7 @@ import { sql } from 'drizzle-orm'
 import { index, integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
 
 // Core files table
-export const files = sqliteTable(
+const files = sqliteTable(
   'files',
   {
     objectId: text('object_id').primaryKey(), // primary id/r2 bucket key

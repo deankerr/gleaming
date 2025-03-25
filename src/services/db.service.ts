@@ -1,7 +1,7 @@
 import type { DB } from '../db'
 import { desc, eq } from 'drizzle-orm'
 import { initDB } from '../db'
-import { files } from '../db/schema'
+import { schema } from '../db/schema'
 
 /**
  * Database service for common operations
@@ -18,7 +18,7 @@ export class DBService {
    */
   async getFileByObjectId(objectId: string) {
     return this.db.query.files.findFirst({
-      where: eq(files.objectId, objectId),
+      where: eq(schema.files.objectId, objectId),
     })
   }
 
@@ -27,7 +27,7 @@ export class DBService {
    */
   async getFileByExternalId(externalId: string) {
     return this.db.query.files.findFirst({
-      where: eq(files.externalId, externalId),
+      where: eq(schema.files.externalId, externalId),
     })
   }
 
@@ -36,7 +36,7 @@ export class DBService {
    */
   async getFileByContentHash(hash: string) {
     return this.db.query.files.findFirst({
-      where: eq(files.contentHash, hash),
+      where: eq(schema.files.contentHash, hash),
     })
   }
 
@@ -54,7 +54,7 @@ export class DBService {
     userId: string
     projectId: string
   }) {
-    await this.db.insert(files).values({
+    await this.db.insert(schema.files).values({
       objectId: data.objectId,
       externalId: data.externalId,
       contentHash: data.contentHash,
@@ -75,7 +75,7 @@ export class DBService {
    */
   async listFiles(limit: number = 50) {
     return this.db.query.files.findMany({
-      orderBy: [desc(files.createdAt)],
+      orderBy: [desc(schema.files.createdAt)],
       limit,
     })
   }
@@ -85,7 +85,7 @@ export class DBService {
    */
   async getWorkspaceFiles(projectId: string) {
     return this.db.query.files.findMany({
-      where: eq(files.projectId, projectId),
+      where: eq(schema.files.projectId, projectId),
     })
   }
 }
