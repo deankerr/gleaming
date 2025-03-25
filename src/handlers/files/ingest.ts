@@ -1,10 +1,10 @@
 import type { IngestImageRoute } from '../../routes/api'
 import type { AppRouteHandler } from '../../types'
 import { bytesToHex } from '@noble/hashes/utils'
-import { ulid } from 'ulidx'
 import { VALID_IMAGE_TYPES } from '../../constants'
 import { AppError, badRequest, internalError } from '../../utils/errors'
-import { generateExternalId } from '../../utils/id'
+import { getNormalizedFilename } from '../../utils/filename'
+import { generateExternalId, generateObjectId } from '../../utils/id'
 
 /**
  * Handler for ingesting an image via URL
@@ -52,9 +52,14 @@ export const ingestImage: AppRouteHandler<IngestImageRoute> = async (c) => {
     }
 
     // Generate a unique ID for both storage and database
-    const objectId = ulid()
+    const objectId = generateObjectId()
     const externalId = generateExternalId()
-    const filename = jsonData.filename || response.info.url.pathname.split('/').pop() || externalId
+
+    // Get normalized filename considering all sources
+    const filename = getNormalizedFilename({
+      customFilename: jsonData.filename,
+      response,
+    })
 
     const keyParts = {
       userId,

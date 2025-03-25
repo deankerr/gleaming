@@ -1,9 +1,9 @@
 import type { UploadImageRoute } from '../../routes/api'
 import type { AppRouteHandler } from '../../types'
 import { bytesToHex } from '@noble/hashes/utils'
-import { ulid } from 'ulidx'
 import { AppError, badRequest } from '../../utils/errors'
-import { generateExternalId } from '../../utils/id'
+import { getNormalizedFilename } from '../../utils/filename'
+import { generateExternalId, generateObjectId } from '../../utils/id'
 
 /**
  * Handler for uploading an image directly from the client
@@ -23,14 +23,17 @@ export const uploadImage: AppRouteHandler<UploadImageRoute> = async (c) => {
       throw badRequest('No file provided')
     }
 
-    // TODO: validate content type
     const contentType = formData.file.type || 'application/octet-stream'
-    console.log('contentType', contentType)
 
     // Generate a unique ID for both storage and database
-    const objectId = ulid()
+    const objectId = generateObjectId()
     const externalId = generateExternalId()
-    const filename = formData.filename || formData.file.name || externalId
+
+    // Get normalized filename considering all sources
+    const filename = getNormalizedFilename({
+      customFilename: formData.filename || formData.file.name,
+      contentType,
+    })
 
     const keyParts = {
       userId,
