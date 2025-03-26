@@ -1,10 +1,9 @@
 import type { AppEnv } from './types'
 import { OpenAPIHono } from '@hono/zod-openapi'
 import { apiReference } from '@scalar/hono-api-reference'
+import { cors } from 'hono/cors'
 import { showRoutes } from 'hono/dev'
 import { HTTPException } from 'hono/http-exception'
-import { logger } from 'hono/logger'
-import { prettyJSON } from 'hono/pretty-json'
 import { secureHeaders } from 'hono/secure-headers'
 import { DEFAULT_PROJECT, DEFAULT_USER } from './constants'
 import { apiAuth } from './middleware/auth'
@@ -53,9 +52,13 @@ app.use('*', async (c, next) => {
 })
 
 // Standard middleware - apply these first so they work for all routes
-app.use('*', logger())
 app.use('*', secureHeaders())
-app.use('*', prettyJSON())
+app.use('/file/*', cors({
+  origin: '*',
+  allowMethods: ['GET', 'OPTIONS'],
+  maxAge: 86400,
+  exposeHeaders: ['Content-Length', 'Content-Type'],
+}))
 app.use('*', serveEmojiFavicon('🤩', '🌌'))
 
 app.use('/api/*', apiAuth())
