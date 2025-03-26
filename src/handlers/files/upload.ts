@@ -60,6 +60,10 @@ export const uploadImage: AppRouteHandler<UploadImageRoute> = async (c) => {
       filename,
       userId,
       projectId,
+      ingestMetadata: {
+        ...c.get('requestMetadata'),
+        method: 'upload',
+      },
     })
 
     return c.json(fileRecord, 201)

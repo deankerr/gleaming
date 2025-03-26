@@ -1,5 +1,5 @@
 #!/usr/bin/env bun
-/* eslint-disable no-console */
+
 /* eslint-disable node/prefer-global/process */
 import { readFile } from 'node:fs/promises'
 import { basename, join } from 'node:path'

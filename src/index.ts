@@ -8,6 +8,7 @@ import { prettyJSON } from 'hono/pretty-json'
 import { secureHeaders } from 'hono/secure-headers'
 import { DEFAULT_PROJECT, DEFAULT_USER } from './constants'
 import { apiAuth } from './middleware/auth'
+import { requestMetadata } from './middleware/request-metadata'
 import { serveEmojiFavicon } from './middleware/serve-emoji-favicon'
 import { apiRouter } from './routes/api'
 import { devRouter } from './routes/dev'
@@ -36,6 +37,9 @@ app.use('*', async (c, next) => {
   c.set('fetch', fetchService)
   await next()
 })
+
+// Add request metadata middleware
+app.use('*', requestMetadata())
 
 // Middleware to set up user and project context
 app.use('*', async (c, next) => {

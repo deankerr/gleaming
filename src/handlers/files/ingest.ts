@@ -80,10 +80,14 @@ export const ingestImage: AppRouteHandler<IngestImageRoute> = async (c) => {
       contentHash: bytesToHex(new Uint8Array(md5)),
       contentType,
       size: r2Object.size,
-
       filename,
       userId,
       projectId,
+      ingestUrl: jsonData.url,
+      ingestMetadata: {
+        ...c.get('requestMetadata'),
+        method: 'ingest',
+      },
     })
 
     // Return the created file

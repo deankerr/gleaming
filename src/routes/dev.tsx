@@ -1,6 +1,5 @@
 import type { AppEnv } from '../types'
 import { Hono } from 'hono'
-import { getConnInfo } from 'hono/cloudflare-workers'
 import { FilesPage, GalleryPage, UploadPage } from '../pages/dev'
 
 // Create the router
@@ -13,7 +12,6 @@ devRouter.get('/upload', async (c) => {
 
 // Route to list files
 devRouter.get('/files', async (c) => {
-  console.log(getConnInfo(c))
   const query = c.req.query()
   const limit = Number.parseInt(query.limit || '50', 10)
   const db = c.get('db')
