@@ -52,13 +52,17 @@ app.use('*', async (c, next) => {
 })
 
 // Standard middleware - apply these first so they work for all routes
-app.use('*', secureHeaders())
+app.use('*', secureHeaders({
+  crossOriginResourcePolicy: false, // Disable CORP to allow cross-origin access
+}))
+
 app.use('/file/*', cors({
   origin: '*',
   allowMethods: ['GET', 'OPTIONS'],
   maxAge: 86400,
   exposeHeaders: ['Content-Length', 'Content-Type'],
 }))
+
 app.use('*', serveEmojiFavicon('🤩', '🌌'))
 
 app.use('/api/*', apiAuth())
