@@ -8,6 +8,6 @@ export function generateExternalId() {
   return nanoid(10)
 }
 
-export function generateObjectId() {
+export function generateUniqueId() {
   return ulid()
 }

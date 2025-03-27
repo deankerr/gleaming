@@ -22,7 +22,7 @@
     {
       "binding": "DB",
       "database_name": "filehost-gleaming",
-      "database_id": "f808468c-deb1-4b2d-b04b-9df75bbca22b",
+      "database_id": "54066008-1975-4bad-a0f8-b7018cce507f",
       "migrations_dir": "src/db/migrations"
     }
   ],

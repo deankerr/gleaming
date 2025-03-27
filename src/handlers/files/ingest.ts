@@ -4,7 +4,7 @@ import { bytesToHex } from '@noble/hashes/utils'
 import { VALID_IMAGE_TYPES } from '../../constants'
 import { AppError, badRequest, internalError } from '../../utils/errors'
 import { getNormalizedFilename } from '../../utils/filename'
-import { generateExternalId, generateObjectId } from '../../utils/id'
+import { generateExternalId, generateUniqueId } from '../../utils/id'
 
 /**
  * Handler for ingesting an image via URL
@@ -52,7 +52,7 @@ export const ingestImage: AppRouteHandler<IngestImageRoute> = async (c) => {
     }
 
     // Generate a unique ID for both storage and database
-    const objectId = generateObjectId()
+    const objectId = generateUniqueId()
     const externalId = generateExternalId()
 
     // Get normalized filename considering all sources
@@ -88,6 +88,8 @@ export const ingestImage: AppRouteHandler<IngestImageRoute> = async (c) => {
         ...c.get('requestMetadata'),
         method: 'ingest',
       },
+      properties: jsonData.properties,
+      tags: jsonData.tags,
     })
 
     // Return the created file

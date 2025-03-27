@@ -35,7 +35,7 @@ For example, you can use Workers KV for:
 - Storing user configurations / preferences.
 - Storing user authentication details.
 
-Access your Workers KV namespace from Cloudflare Workers using [Workers Bindings](/workers/runtime-apis/bindings/) or from your external application using the REST API:
+Access your Workers KV namespace from Cloudflare Workers using [Workers Bindings](mdc:workers/runtime-apis/bindings) or from your external application using the REST API:
 
 <Tabs>
 <TabItem label="Workers Binding API">
@@ -93,7 +93,7 @@ export default {
     </TabItem>
     </Tabs>
 
-See the full [Workers KV binding API reference](/kv/api/read-key-value-pairs/).
+See the full [Workers KV binding API reference](mdc:kv/api/read-key-value-pairs).
 
 </TabItem>
 <TabItem label="REST API">
@@ -144,7 +144,7 @@ See the full [Workers KV binding API reference](/kv/api/read-key-value-pairs/).
     	</TabItem>
     </Tabs>
 
-See the full Workers KV [REST API and SDK reference](/api/resources/kv/subresources/namespaces/methods/list/) for details on using REST API from external applications, with pre-generated SDK's for external TypeScript, Python, or Go applications.
+See the full Workers KV [REST API and SDK reference](mdc:api/resources/kv/subresources/namespaces/methods/list) for details on using REST API from external applications, with pre-generated SDK's for external TypeScript, Python, or Go applications.
 
 </TabItem>
 </Tabs>
@@ -161,13 +161,13 @@ See the full Workers KV [REST API and SDK reference](/api/resources/kv/subresour
 
 <Feature header="Wrangler" href="/workers/wrangler/install-and-update/">
 
-The Workers command-line interface, Wrangler, allows you to [create](/workers/wrangler/commands/#init), [test](/workers/wrangler/commands/#dev), and [deploy](/workers/wrangler/commands/#publish) your Workers projects.
+The Workers command-line interface, Wrangler, allows you to [create](mdc:workers/wrangler/commands/#init), [test](mdc:workers/wrangler/commands/#dev), and [deploy](mdc:workers/wrangler/commands/#publish) your Workers projects.
 
 </Feature>
 
 <Feature header="Bindings" href="/kv/concepts/kv-bindings/">
 
-Bindings allow your Workers to interact with resources on the Cloudflare developer platform, including [R2](/r2/), [Durable Objects](/durable-objects/), and [D1](/d1/).
+Bindings allow your Workers to interact with resources on the Cloudflare developer platform, including [R2](mdc:r2), [Durable Objects](mdc:durable-objects), and [D1](mdc:d1).
 
 </Feature>
 
@@ -231,7 +231,7 @@ URL: https://developers.cloudflare.com/kv/api/delete-key-value-pairs/
 
 import { GlossaryTooltip } from "~/components"
 
-To delete a key-value pair, call the `delete()` method of the [KV binding](/kv/concepts/kv-bindings/) on any [KV namespace](/kv/concepts/kv-namespaces/) you have bound to your Worker code:
+To delete a key-value pair, call the `delete()` method of the [KV binding](mdc:kv/concepts/kv-bindings) on any [KV namespace](mdc:kv/concepts/kv-namespaces) you have bound to your Worker code:
 
 ```js
 env.NAMESPACE.delete(key);
@@ -262,11 +262,11 @@ export default {
 ## Reference
 
 The following method is provided to delete from KV:
-- [delete()](#delete-method)
+- [delete()](mdc:#delete-method)
 
 ### `delete()` method
 
-To delete a key-value pair, call the `delete()` method of the [KV binding](/kv/concepts/kv-bindings/) on any KV namespace you have bound to your Worker code:
+To delete a key-value pair, call the `delete()` method of the [KV binding](mdc:kv/concepts/kv-bindings) on any KV namespace you have bound to your Worker code:
 
 ```js
 env.NAMESPACE.delete(key);
@@ -291,12 +291,12 @@ Calling the `delete()` method will remove the key and value from your KV namespa
 
 ### Delete data in bulk
 
-Delete more than one key-value pair at a time with Wrangler or [via the REST API](/api/resources/kv/subresources/namespaces/methods/bulk_delete/).
+Delete more than one key-value pair at a time with Wrangler or [via the REST API](mdc:api/resources/kv/subresources/namespaces/methods/bulk_delete).
 
-The bulk REST API can accept up to 10,000 KV pairs at once. Bulk writes are not supported using the [KV binding](/kv/concepts/kv-bindings/).
+The bulk REST API can accept up to 10,000 KV pairs at once. Bulk writes are not supported using the [KV binding](mdc:kv/concepts/kv-bindings).
 
 ## Other methods to access KV
-You can also [delete key-value pairs from the command line with Wrangler](/kv/reference/kv-commands/#kv-namespace-delete) or [with the REST API](/api/resources/kv/subresources/namespaces/subresources/values/methods/delete/).
+You can also [delete key-value pairs from the command line with Wrangler](mdc:kv/reference/kv-commands/#kv-namespace-delete) or [with the REST API](mdc:api/resources/kv/subresources/namespaces/subresources/values/methods/delete).
 
 ---
 
@@ -314,7 +314,7 @@ import { DirectoryListing } from "~/components";
 
 URL: https://developers.cloudflare.com/kv/api/list-keys/
 
-To list all the keys in your KV namespace, call the `list()` method of the [KV binding](/kv/concepts/kv-bindings/) on any [KV namespace](/kv/concepts/kv-namespaces/) you have bound to your Worker code:
+To list all the keys in your KV namespace, call the `list()` method of the [KV binding](mdc:kv/concepts/kv-bindings) on any [KV namespace](mdc:kv/concepts/kv-namespaces) you have bound to your Worker code:
 
 
 ```js
@@ -348,11 +348,11 @@ export default {
 ## Reference
 
 The following method is provided to list the keys of KV:
-- [list()](#list-method)
+- [list()](mdc:#list-method)
 
 ### `list()` method
 
-To list all the keys in your KV namespace, call the `list()` method of the [KV binding](/kv/concepts/kv-bindings/) on any KV namespace you have bound to your Worker code:
+To list all the keys in your KV namespace, call the `list()` method of the [KV binding](mdc:kv/concepts/kv-bindings) on any KV namespace you have bound to your Worker code:
 
 ```ts
 env.NAMESPACE.list(options?)
@@ -403,9 +403,9 @@ The `keys` property will contain an array of objects describing each key. That o
 
 The `name` is a `string`, the `expiration` value is a number, and `metadata` is whatever type was set initially. The `expiration` value will only be returned if the key has an expiration and will be in the absolute value form, even if it was set in the TTL form. Any `metadata` will only be returned if the given key has non-null associated metadata.
 
-If `list_complete` is `false`, there are more keys to fetch, even if the `keys` array is empty. You will use the `cursor` property to get more keys. Refer to [Pagination](#pagination) for more details.
+If `list_complete` is `false`, there are more keys to fetch, even if the `keys` array is empty. You will use the `cursor` property to get more keys. Refer to [Pagination](mdc:#pagination) for more details.
 
-Consider storing your values in metadata if your values fit in the [metadata-size limit](/kv/platform/limits/). Storing values in metadata is more efficient than a `list()` followed by a `get()` per key. When using `put()`, leave the `value` parameter empty and instead include a property in the metadata object:
+Consider storing your values in metadata if your values fit in the [metadata-size limit](mdc:kv/platform/limits). Storing values in metadata is more efficient than a `list()` followed by a `get()` per key. When using `put()`, leave the `value` parameter empty and instead include a property in the metadata object:
 
 ```js
 await NAMESPACE.put(key, "", {
@@ -452,13 +452,13 @@ const next_value = await NAMESPACE.list({ cursor: cursor });
 
 Checking for an empty array in `keys` is not sufficient to determine whether there are more keys to fetch. Instead, use `list_complete`.
 
-It is possible to have an empty array in `keys`, but still have more keys to fetch, because [recently expired or deleted keys](https://en.wikipedia.org/wiki/Tombstone_%28data_store%29) must be iterated through but will not be included in the returned `keys`.
+It is possible to have an empty array in `keys`, but still have more keys to fetch, because [recently expired or deleted keys](mdc:https:/en.wikipedia.org/wiki/Tombstone_%28data_store%29) must be iterated through but will not be included in the returned `keys`.
 
 When de-paginating a large result set while also providing a `prefix` argument, the `prefix` argument must be provided in all subsequent calls along with the initial arguments.
 
 ### Optimizing storage with metadata for `list()` operations
 
-Consider storing your values in metadata if your values fit in the [metadata-size limit](/kv/platform/limits/). Storing values in metadata is more efficient than a `list()` followed by a `get()` per key. When using `put()`, leave the `value` parameter empty and instead include a property in the metadata object:
+Consider storing your values in metadata if your values fit in the [metadata-size limit](mdc:kv/platform/limits). Storing values in metadata is more efficient than a `list()` followed by a `get()` per key. When using `put()`, leave the `value` parameter empty and instead include a property in the metadata object:
 
 ```js
 await NAMESPACE.put(key, "", {
@@ -467,7 +467,7 @@ await NAMESPACE.put(key, "", {
 ```
 
 ## Other methods to access KV
-You can also [list keys on the command line with Wrangler](/kv/reference/kv-commands/#kv-namespace-list) or [with the REST API](/api/resources/kv/subresources/namespaces/subresources/keys/methods/list/).
+You can also [list keys on the command line with Wrangler](mdc:kv/reference/kv-commands/#kv-namespace-list) or [with the REST API](mdc:api/resources/kv/subresources/namespaces/subresources/keys/methods/list).
 
 ---
 
@@ -475,7 +475,7 @@ You can also [list keys on the command line with Wrangler](/kv/reference/kv-comm
 
 URL: https://developers.cloudflare.com/kv/api/read-key-value-pairs/
 
-To get the value for a given key, call the `get()` method of the [KV binding](/kv/concepts/kv-bindings/) on any [KV namespace](/kv/concepts/kv-namespaces/) you have bound to your Worker code:
+To get the value for a given key, call the `get()` method of the [KV binding](mdc:kv/concepts/kv-bindings) on any [KV namespace](mdc:kv/concepts/kv-namespaces) you have bound to your Worker code:
 
 ```js
 env.NAMESPACE.get(key);
@@ -508,8 +508,8 @@ export default {
 
 The following methods are provided to read from KV:
 
-- [get()](#get-method)
-- [getWithMetadata()](#getwithmetadata-method)
+- [get()](mdc:#get-method)
+- [getWithMetadata()](mdc:#getwithmetadata-method)
 
 ### `get()` method
 
@@ -541,8 +541,8 @@ The `get()` method returns a promise you can `await` on to get the value. If the
   - The value for the requested KV pair. The response type will depend on the `type` parameter provided for the `get()` command as follows:
     - `text`: A `string` (default).
     - `json`: An object decoded from a JSON string.
-    - `arrayBuffer`: An [`ArrayBuffer`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer) instance.
-    - `stream`: A [`ReadableStream`](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream).
+    - `arrayBuffer`: An [`ArrayBuffer`](mdc:https:/developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer) instance.
+    - `stream`: A [`ReadableStream`](mdc:https:/developer.mozilla.org/en-US/docs/Web/API/ReadableStream).
 
 The `get()` method may return stale values. If a given key has recently been read in a given location, writes or updates to the key made in other locations may take up to 60 seconds (or the duration of the `cacheTtl`) to display.
 
@@ -580,8 +580,8 @@ metadata: string | null
   - An object containing the value and the metadata for the requested KV pair. The type of the value attribute will depend on the `type` parameter provided for the `getWithMetadata()` command as follows:
     - `text`: A `string` (default).
     - `json`: An object decoded from a JSON string.
-    - `arrayBuffer`: An [`ArrayBuffer`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer) instance.
-    - `stream`: A [`ReadableStream`](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream).
+    - `arrayBuffer`: An [`ArrayBuffer`](mdc:https:/developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer) instance.
+    - `stream`: A [`ReadableStream`](mdc:https:/developer.mozilla.org/en-US/docs/Web/API/ReadableStream).
 
 If there is no metadata associated with the requested key-value pair, `null` will be returned for metadata.
 
@@ -625,7 +625,7 @@ Defining the length of time in seconds is useful for reducing cold read latency 
 
 :::note[Hot and cold read]
 
-A hot read means that the data is cached on Cloudflare's edge network using the [CDN](https://developers.cloudflare.com/cache/), whether it is in a local cache or a regional cache. A cold read means that the data is not cached, so the data must be fetched from the central stores. Both existing key-value pairs and non-existent key-value pairs (also known as negative lookups) are cached at the edge.
+A hot read means that the data is cached on Cloudflare's edge network using the [CDN](mdc:https:/developers.cloudflare.com/cache), whether it is in a local cache or a regional cache. A cold read means that the data is not cached, so the data must be fetched from the central stores. Both existing key-value pairs and non-existent key-value pairs (also known as negative lookups) are cached at the edge.
 :::
 
 `cacheTtl` is not recommended if your data is updated often and you need to see updates shortly after they are written, because writes that happen from other global network locations will not be visible until the cached value expires.
@@ -636,7 +636,7 @@ The effective `cacheTtl` of an already cached item can be reduced by getting it 
 
 ## Other methods to access KV
 
-You can [read key-value pairs from the command line with Wrangler](/kv/reference/kv-commands/#kv-key-get) and [from the REST API](/api/resources/kv/subresources/namespaces/subresources/values/methods/get/).
+You can [read key-value pairs from the command line with Wrangler](mdc:kv/reference/kv-commands/#kv-key-get) and [from the REST API](mdc:api/resources/kv/subresources/namespaces/subresources/values/methods/get).
 
 ---
 
@@ -665,30 +665,30 @@ Requests which are not in cache and need to access the central stores can experi
 
 When you write to KV, your data is written to central data stores. Your data is not sent automatically to every location's cache.
 
-![Your data is written to central data stores when you write to KV.](~/assets/images/kv/kv-write.svg)
+![Your data is written to central data stores when you write to KV.](mdc:~/assets/images/kv/kv-write.svg)
 
 Initial reads from a location do not have a cached value. Data must be read from the nearest regional tier, followed by a central tier, degrading finally to the central stores for a truly cold global read. While the first access is slow globally, subsequent requests are faster, especially if requests are concentrated in a single region.
 
 :::note[Hot and cold read]
 
-A hot read means that the data is cached on Cloudflare's edge network using the [CDN](https://developers.cloudflare.com/cache/), whether it is in a local cache or a regional cache. A cold read means that the data is not cached, so the data must be fetched from the central stores.
+A hot read means that the data is cached on Cloudflare's edge network using the [CDN](mdc:https:/developers.cloudflare.com/cache), whether it is in a local cache or a regional cache. A cold read means that the data is not cached, so the data must be fetched from the central stores.
 :::
 
-![Initial reads will miss the cache and go to the nearest central data store first.](~/assets/images/kv/kv-slow-read.svg)
+![Initial reads will miss the cache and go to the nearest central data store first.](mdc:~/assets/images/kv/kv-slow-read.svg)
 
 Frequent reads from the same location return the cached value without reading from anywhere else, resulting in the fastest response times. KV operates diligently to update the cached values by refreshing from upper tier caches and central data stores before cache expires in the background.
 
 Refreshing from upper tiers and the central data stores in the background is done carefully so that assets that are being accessed continue to be kept served from the cache without any stalls.
 
-![As mentioned above, frequent reads will return a cached value.](~/assets/images/kv/kv-fast-read.svg)
+![As mentioned above, frequent reads will return a cached value.](mdc:~/assets/images/kv/kv-fast-read.svg)
 
 KV is optimized for high-read applications. It stores data centrally and uses a hybrid push/pull-based replication to store data in cache. KV is suitable for use cases where you need to write relatively infrequently, but read quickly and frequently. Infrequently read values are pulled from other data centers or the central stores, while more popular values are cached in the data centers they are requested from.
 
 ## Performance
 
-To improve KV performance, increase the [`cacheTtl` parameter](/kv/api/read-key-value-pairs/#cachettl-parameter) up from its default 60 seconds.
+To improve KV performance, increase the [`cacheTtl` parameter](mdc:kv/api/read-key-value-pairs/#cachettl-parameter) up from its default 60 seconds.
 
-KV achieves high performance by [caching](https://www.cloudflare.com/en-gb/learning/cdn/what-is-caching/) which makes reads eventually-consistent with writes.
+KV achieves high performance by [caching](mdc:https:/www.cloudflare.com/en-gb/learning/cdn/what-is-caching) which makes reads eventually-consistent with writes.
 
 Changes are usually immediately visible in the Cloudflare global network location at which they are made. Changes may take up to 60 seconds or more to be visible in other global network locations as their cached versions of the data time out.
 
@@ -703,7 +703,7 @@ Visibility of changes takes longer in locations which have recently read a previ
 :::note
 
 KV is not ideal for applications where you need support for atomic operations or where values must be read and written in a single transaction.
-If you need stronger consistency guarantees, consider using [Durable Objects](/durable-objects/).
+If you need stronger consistency guarantees, consider using [Durable Objects](mdc:durable-objects).
 :::
 
 An approach to achieve write-after-write consistency is to send all of your writes for a given KV key through a corresponding instance of a Durable Object, and then read that value from KV in other Workers. This is useful if you need more control over writes, but are satisfied with KV's read characteristics described above.
@@ -720,13 +720,13 @@ Workers KV is an eventually-consistent edge key-value store. That makes it ideal
 
 In these scenarios, Workers are invoked in a data center closest to the user and Workers KV data will be cached in that region for subsequent requests to minimize latency.
 
-If you have a **write-heavy** [Redis](https://redis.io)-type workload where you are updating the same key tens or hundreds of times per second, KV will not be an ideal fit.
+If you have a **write-heavy** [Redis](mdc:https:/redis.io)-type workload where you are updating the same key tens or hundreds of times per second, KV will not be an ideal fit.
 If you can revisit how your application writes to single key-value pairs and spread your writes across several discrete keys, Workers KV can suit your needs.
-Alternatively, [Durable Objects](/durable-objects/) provides a key-value API with higher writes per key rate limits.
+Alternatively, [Durable Objects](mdc:durable-objects) provides a key-value API with higher writes per key rate limits.
 
 ## Security
 
-Refer to [Data security documentation](/kv/reference/data-security/) to understand how Workers KV secures data.
+Refer to [Data security documentation](mdc:kv/reference/data-security) to understand how Workers KV secures data.
 
 ---
 
@@ -739,14 +739,14 @@ import { Render, PackageManagers } from "~/components";
 By storing static assets in Workers KV, you can retrieve these assets globally with low-latency and high throughput. You can then serve these assets directly, or use them to dynamically generate responses. This can be useful when serving files and images, or when generating dynamic HTML responses from static assets such as translations.
 
 :::note[Note]
-With [Workers KV](/kv), you can access, edit and store assets directly from your [Worker](/workers). If you need to serve assets as part of a front-end or full-stack web application, consider using [Cloudflare Pages](/pages/) or [Workers static assets](/workers/static-assets/), which provide a purpose-built deployment experience for web applications and their assets.
+With [Workers KV](mdc:kv), you can access, edit and store assets directly from your [Worker](mdc:workers). If you need to serve assets as part of a front-end or full-stack web application, consider using [Cloudflare Pages](mdc:pages) or [Workers static assets](mdc:workers/static-assets), which provide a purpose-built deployment experience for web applications and their assets.
 :::
 
 <Render file="tutorials-before-you-start" product="workers" />
 
 ## 1. Create a new Worker application
 
-To get started, create a Worker application using the [`create-cloudflare` CLI](https://github.com/cloudflare/workers-sdk/tree/main/packages/create-cloudflare). Open a terminal window and run the following command:
+To get started, create a Worker application using the [`create-cloudflare` CLI](mdc:https:/github.com/cloudflare/workers-sdk/tree/main/packages/create-cloudflare). Open a terminal window and run the following command:
 
 <PackageManagers
 	type="create"
@@ -812,7 +812,7 @@ To create a KV store via Wrangler:
    id = "<GENERATED_NAMESPACE_ID>"
    ```
 
-   The [KV binding](/kv/concepts/kv-bindings/) `assets` is how your Worker will interact with the [KV namespace](/kv/concepts/kv-namespaces/). This binding will be provided as a runtime variable within your Workers code by the Workers runtime.
+   The [KV binding](mdc:kv/concepts/kv-bindings) `assets` is how your Worker will interact with the [KV namespace](mdc:kv/concepts/kv-namespaces). This binding will be provided as a runtime variable within your Workers code by the Workers runtime.
 
    We'll also create a preview KV namespace. It is recommended to create a separate KV namespace when developing locally to avoid making changes to the production namespace. When developing locally against remote resources, the Wrangler CLI will only use the namespace specified by `preview_id` in the KV namespace configuration of the Wrangler file.
 
@@ -1107,8 +1107,8 @@ We can now verify that our project is properly working by accessing our Workers 
 
 ## Related resources
 
-- [Rust support in Workers](/workers/languages/rust/).
-- [Using KV in Workers](/kv/get-started/).
+- [Rust support in Workers](mdc:workers/languages/rust).
+- [Using KV in Workers](mdc:kv/get-started).
 
 ---
 
@@ -1116,7 +1116,7 @@ We can now verify that our project is properly working by accessing our Workers 
 
 URL: https://developers.cloudflare.com/kv/api/write-key-value-pairs/
 
-To create a new key-value pair, or to update the value for a particular key, call the `put()` method of the [KV binding](/kv/concepts/kv-bindings/) on any [KV namespace](/kv/concepts/kv-namespaces/) you have bound to your Worker code:
+To create a new key-value pair, or to update the value for a particular key, call the `put()` method of the [KV binding](mdc:kv/concepts/kv-bindings) on any [KV namespace](mdc:kv/concepts/kv-namespaces) you have bound to your Worker code:
 
 ```js
 env.NAMESPACE.put(key, value);
@@ -1146,7 +1146,7 @@ export default {
 
 The following method is provided to write to KV:
 
-- [put()](#put-method)
+- [put()](mdc:#put-method)
 
 ### `put()` method
 
@@ -1191,15 +1191,15 @@ If concurrent writes are made to the same key, the last write will take preceden
 
 Writes are immediately visible to other requests in the same global network location, but can take up to 60 seconds (or the value of the `cacheTtl` parameter of the `get()` or `getWithMetadata()` methods) to be visible in other parts of the world.
 
-Refer to [How KV works](/kv/concepts/how-kv-works/) for more information on this topic.
+Refer to [How KV works](mdc:kv/concepts/how-kv-works) for more information on this topic.
 
 ### Write data in bulk
 
-Write more than one key-value pair at a time with Wrangler or [via the REST API](/api/resources/kv/subresources/namespaces/methods/bulk_update/).
+Write more than one key-value pair at a time with Wrangler or [via the REST API](mdc:api/resources/kv/subresources/namespaces/methods/bulk_update).
 
 The bulk API can accept up to 10,000 KV pairs at once.
 
-A `key` and a `value` are required for each KV pair. The entire request size must be less than 100 megabytes. Bulk writes are not supported using the [KV binding](/kv/concepts/kv-bindings/).
+A `key` and a `value` are required for each KV pair. The entire request size must be less than 100 megabytes. Bulk writes are not supported using the [KV binding](mdc:kv/concepts/kv-bindings).
 
 ### Expiring keys
 
@@ -1215,7 +1215,7 @@ An `expiration` setting on a key will result in that key being deleted, even in 
 
 There are two ways to specify when a key should expire:
 
-- Set a key's expiration using an absolute time specified in a number of [seconds since the UNIX epoch](https://en.wikipedia.org/wiki/Unix_time). For example, if you wanted a key to expire at 12:00AM UTC on April 1, 2019, you would set the keyâ€™s expiration to `1554076800`.
+- Set a key's expiration using an absolute time specified in a number of [seconds since the UNIX epoch](mdc:https:/en.wikipedia.org/wiki/Unix_time). For example, if you wanted a key to expire at 12:00AM UTC on April 1, 2019, you would set the keyâ€™s expiration to `1554076800`.
 
 - Set a key's expiration time to live (TTL) using a relative number of seconds from the current time. For example, if you wanted a key to expire 10 minutes after creating it, you would set its expiration TTL to `600`.
 
@@ -1381,7 +1381,7 @@ async function retryWithBackoff(
 
 ## Other methods to access KV
 
-You can also [write key-value pairs from the command line with Wrangler](/kv/reference/kv-commands/#kv-namespace-create) and [write data via the REST API](/api/resources/kv/subresources/namespaces/subresources/values/methods/update/).
+You can also [write key-value pairs from the command line with Wrangler](mdc:kv/reference/kv-commands/#kv-namespace-create) and [write data via the REST API](mdc:api/resources/kv/subresources/namespaces/subresources/values/methods/update).
 
 ---
 
@@ -1401,13 +1401,13 @@ URL: https://developers.cloudflare.com/kv/concepts/kv-bindings/
 
 import { WranglerConfig } from "~/components";
 
-KV [bindings](/workers/runtime-apis/bindings/) allow for communication between a Worker and a KV namespace.
+KV [bindings](mdc:workers/runtime-apis/bindings) allow for communication between a Worker and a KV namespace.
 
-Configure KV bindings in the [Wrangler configuration file](/workers/wrangler/configuration/).
+Configure KV bindings in the [Wrangler configuration file](mdc:workers/wrangler/configuration).
 
 ## Access KV from Workers
 
-A [KV namespace](/kv/concepts/kv-namespaces/) is a key-value database replicated to Cloudflare's global network.
+A [KV namespace](mdc:kv/concepts/kv-namespaces) is a key-value database replicated to Cloudflare's global network.
 
 To connect to a KV namespace from within a Worker, you must define a binding that points to the namespace's ID.
 
@@ -1472,7 +1472,7 @@ kv_namespaces = [
 
 ## Access KV from Durable Objects and Workers using ES modules format
 
-[Durable Objects](/durable-objects/) use ES modules format. Instead of a global variable, bindings are available as properties of the `env` parameter [passed to the constructor](/durable-objects/get-started/tutorial/#3-write-a-durable-object-class).
+[Durable Objects](mdc:durable-objects) use ES modules format. Instead of a global variable, bindings are available as properties of the `env` parameter [passed to the constructor](mdc:durable-objects/get-started/tutorial/#3-write-a-durable-object-class).
 
 An example might look like:
 
@@ -1540,7 +1540,7 @@ kv_namespaces = [
 
 To bind the namespace to your Worker in the Cloudflare dashboard:
 
-1. Log in to the [Cloudflare dashboard](https://dash.cloudflare.com).
+1. Log in to the [Cloudflare dashboard](mdc:https:/dash.cloudflare.com).
 2. Go to **Workers & Pages**.
 3. Select your **Worker**.
 4. Select **Settings** > **Bindings**.
@@ -1568,7 +1568,7 @@ URL: https://developers.cloudflare.com/kv/observability/metrics-analytics/
 
 KV exposes analytics that allow you to inspect requests and storage across all namespaces in your account.
 
-The metrics displayed in the [Cloudflare dashboard](https://dash.cloudflare.com/) charts are queried from Cloudflareâ€™s [GraphQL Analytics API](/analytics/graphql-api/). You can access the metrics [programmatically](#query-via-the-graphql-api) via GraphQL or HTTP client.
+The metrics displayed in the [Cloudflare dashboard](mdc:https:/dash.cloudflare.com) charts are queried from Cloudflareâ€™s [GraphQL Analytics API](mdc:analytics/graphql-api). You can access the metrics [programmatically](mdc:#query-via-the-graphql-api) via GraphQL or HTTP client.
 
 ## Metrics
 
@@ -1585,8 +1585,8 @@ Metrics can be queried (and are retained) for the past 31 days.
 
 Per-namespace analytics for KV are available in the Cloudflare dashboard. To view current and historical metrics for a database:
 
-1. Log in to the [Cloudflare dashboard](https://dash.cloudflare.com) and select your account.
-2. Go to [**Workers & Pages** > **KV**](https://dash.cloudflare.com/?to=/:account/workers/kv/namespaces).
+1. Log in to the [Cloudflare dashboard](mdc:https:/dash.cloudflare.com) and select your account.
+2. Go to [**Workers & Pages** > **KV**](mdc:https:/dash.cloudflare.com/?to=/:account/workers/kv/namespaces).
 3. Select an existing namespace.
 4. Select the **Metrics** tab.
 
@@ -1594,9 +1594,9 @@ You can optionally select a time window to query. This defaults to the last 24 h
 
 ## Query via the GraphQL API
 
-You can programmatically query analytics for your KV namespaces via the [GraphQL Analytics API](/analytics/graphql-api/). This API queries the same datasets as the Cloudflare dashboard, and supports GraphQL [introspection](/analytics/graphql-api/features/discovery/introspection/).
+You can programmatically query analytics for your KV namespaces via the [GraphQL Analytics API](mdc:analytics/graphql-api). This API queries the same datasets as the Cloudflare dashboard, and supports GraphQL [introspection](mdc:analytics/graphql-api/features/discovery/introspection).
 
-To get started using the [GraphQL Analytics API](/analytics/graphql-api/), follow the documentation to setup [Authentication for the GraphQL Analytics API](/analytics/graphql-api/getting-started/authentication/).
+To get started using the [GraphQL Analytics API](mdc:analytics/graphql-api), follow the documentation to setup [Authentication for the GraphQL Analytics API](mdc:analytics/graphql-api/getting-started/authentication).
 
 To use the GraphQL API to retrieve KV's datasets, you must provide the `accountTag` filter with your Cloudflare Account ID. The GraphQL datasets for KV include:
 
@@ -1749,7 +1749,7 @@ import { Render } from "~/components"
 | Key size                          | 512 bytes             | 512 bytes    |
 | Key metadata                      | 1024 bytes            | 1024 bytes   |
 | Value size                        | 25 MiB                | 25 MiB       |
-| Minimum [`cacheTtl`](/kv/api/read-key-value-pairs/#cachettl-parameter)         | 60 seconds            | 60 seconds   |
+| Minimum [`cacheTtl`](mdc:kv/api/read-key-value-pairs/#cachettl-parameter)         | 60 seconds            | 60 seconds   |
 
 [^1]: Within a single invocation, a Worker can make up to 1,000 operations to external services (for example, 500 Workers KV reads and 500 R2 reads).
 
@@ -1757,13 +1757,13 @@ import { Render } from "~/components"
 
 :::note[Free versus Paid plan pricing]
 
-Refer to [KV pricing](/kv/platform/pricing/) to review the specific KV operations you are allowed under each plan with their pricing.
+Refer to [KV pricing](mdc:kv/platform/pricing) to review the specific KV operations you are allowed under each plan with their pricing.
 
 :::
 
 :::note[Workers KV REST API limits]
 
-Using the REST API to access Cloudflare Workers KV is subject to the [rate limits that apply to all operations of the Cloudflare REST API](/fundamentals/api/reference/limits).
+Using the REST API to access Cloudflare Workers KV is subject to the [rate limits that apply to all operations of the Cloudflare REST API](mdc:fundamentals/api/reference/limits).
 
 :::
 
@@ -1779,7 +1779,7 @@ import { Render } from "~/components"
 
 ## Pricing FAQ
 
-### When writing via KV's [REST API](/api/resources/kv/subresources/namespaces/methods/bulk_update/), how are writes charged?
+### When writing via KV's [REST API](mdc:api/resources/kv/subresources/namespaces/methods/bulk_update), how are writes charged?
 
 Each key-value pair in the `PUT` request is counted as a single write, identical to how each call to `PUT` in the Workers API counts as a write. Writing 5,000 keys via the REST API incurs the same write costs as making 5,000 `PUT` calls in a Worker.
 
@@ -1823,17 +1823,17 @@ Values are only decrypted by the process executing your Worker code or respondin
 
 Encryption keys are managed by Cloudflare and securely stored in the same key management systems we use for managing encrypted data across Cloudflare internally.
 
-Objects are encrypted using [AES-256](https://www.cloudflare.com/learning/ssl/what-is-encryption/), a widely tested, highly performant and industry-standard encryption algorithm. KV uses GCM (Galois/Counter Mode) as its preferred mode.
+Objects are encrypted using [AES-256](mdc:https:/www.cloudflare.com/learning/ssl/what-is-encryption), a widely tested, highly performant and industry-standard encryption algorithm. KV uses GCM (Galois/Counter Mode) as its preferred mode.
 
 ## Encryption in Transit
 
-Data transfer between a Cloudflare Worker, and/or between nodes within the Cloudflare network and KV is secured using the same [Transport Layer Security](https://www.cloudflare.com/learning/ssl/transport-layer-security-tls/) (TLS/SSL).
+Data transfer between a Cloudflare Worker, and/or between nodes within the Cloudflare network and KV is secured using the same [Transport Layer Security](mdc:https:/www.cloudflare.com/learning/ssl/transport-layer-security-tls) (TLS/SSL).
 
-API access via the HTTP API or using the [wrangler](/workers/wrangler/install-and-update/) command-line interface is also over TLS/SSL (HTTPS).
+API access via the HTTP API or using the [wrangler](mdc:workers/wrangler/install-and-update) command-line interface is also over TLS/SSL (HTTPS).
 
 ## Compliance
 
-To learn more about Cloudflare's adherence to industry-standard security compliance certifications, refer to Cloudflare's [Trust Hub](https://www.cloudflare.com/trust-hub/compliance-resources/).
+To learn more about Cloudflare's adherence to industry-standard security compliance certifications, refer to Cloudflare's [Trust Hub](mdc:https:/www.cloudflare.com/trust-hub/compliance-resources).
 
 ---
 
@@ -1843,7 +1843,7 @@ URL: https://developers.cloudflare.com/kv/reference/environments/
 
 import { WranglerConfig } from "~/components";
 
-KV namespaces can be used with [environments](/workers/wrangler/environments/). This is useful when you have code in your Worker that refers to a KV binding like `MY_KV`, and you want to have these bindings point to different KV namespaces (for example, one for staging and one for production).
+KV namespaces can be used with [environments](mdc:workers/wrangler/environments). This is useful when you have code in your Worker that refers to a KV binding like `MY_KV`, and you want to have these bindings point to different KV namespaces (for example, one for staging and one for production).
 
 The following code in the Wrangler file shows you how to have two environments that have two different KV namespaces but the same binding name:
 
@@ -1881,7 +1881,7 @@ wrangler kv key put --namespace-id=<YOUR_ID> "<KEY>" "<VALUE>"
 
 :::caution
 
-Since version 3.60.0, Wrangler KV commands support the `kv ...` syntax. If you are using versions of Wrangler below 3.60.0, the command follows the `kv:...` syntax. Learn more about the deprecation of the `kv:...` syntax in the [Wrangler commands](/kv/reference/kv-commands/) for KV page.
+Since version 3.60.0, Wrangler KV commands support the `kv ...` syntax. If you are using versions of Wrangler below 3.60.0, the command follows the `kv:...` syntax. Learn more about the deprecation of the `kv:...` syntax in the [Wrangler commands](mdc:kv/reference/kv-commands) for KV page.
 :::
 
 Most `kv` subcommands also allow you to specify an environment with the optional `--env` flag.
@@ -1936,23 +1936,23 @@ Frequently asked questions regarding Workers KV.
 
 ### Can I use Workers KV without using Workers?
 
-Yes, you can use Workers KV outside of Workers by using the [REST API](/api/resources/kv/) or the associated Cloudflare SDKs for the REST API. It is important to note the [limits of the REST API](/fundamentals/api/reference/limits/) that apply.
+Yes, you can use Workers KV outside of Workers by using the [REST API](mdc:api/resources/kv) or the associated Cloudflare SDKs for the REST API. It is important to note the [limits of the REST API](mdc:fundamentals/api/reference/limits) that apply.
 
 ### Why can I not immediately see the updated value of a key-value pair?
 
-Workers KV heavily caches data across the Cloudflare network. Therefore, it is possible that you read a cached value for up to the [cache TTL](/kv/api/read-key-value-pairs/#cachettl-parameter) duration.
+Workers KV heavily caches data across the Cloudflare network. Therefore, it is possible that you read a cached value for up to the [cache TTL](mdc:kv/api/read-key-value-pairs/#cachettl-parameter) duration.
 
 ### Is Workers KV eventually consistent or strongly consistent?
 
 Workers KV is eventually consistent.
 
-Workers KV stores data in central stores and replicates the data to all Cloudflare locations through a hybrid push/pull replication approach. This means that the previous value of the key-value pair may be seen in a location for as long as the [cache TTL](/kv/api/read-key-value-pairs/#cachettl-parameter). This means that Workers KV is eventually consistent.
+Workers KV stores data in central stores and replicates the data to all Cloudflare locations through a hybrid push/pull replication approach. This means that the previous value of the key-value pair may be seen in a location for as long as the [cache TTL](mdc:kv/api/read-key-value-pairs/#cachettl-parameter). This means that Workers KV is eventually consistent.
 
-Refer to [How KV works](/kv/concepts/how-kv-works/).
+Refer to [How KV works](mdc:kv/concepts/how-kv-works).
 
 ## Pricing
 
-### When writing via Workers KV's [REST API](/api/resources/kv/subresources/namespaces/methods/bulk_update/), how are writes charged?
+### When writing via Workers KV's [REST API](mdc:api/resources/kv/subresources/namespaces/methods/bulk_update), how are writes charged?
 
 Each key-value pair in the `PUT` request is counted as a single write, identical to how each call to `PUT` in the Workers API counts as a write. Writing 5,000 keys via the REST API incurs the same write costs as making 5,000 `PUT` calls in a Worker.
 

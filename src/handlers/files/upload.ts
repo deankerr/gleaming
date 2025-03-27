@@ -3,7 +3,7 @@ import type { AppRouteHandler } from '../../types'
 import { bytesToHex } from '@noble/hashes/utils'
 import { AppError, badRequest } from '../../utils/errors'
 import { getNormalizedFilename } from '../../utils/filename'
-import { generateExternalId, generateObjectId } from '../../utils/id'
+import { generateExternalId, generateUniqueId } from '../../utils/id'
 
 /**
  * Handler for uploading an image directly from the client
@@ -26,7 +26,7 @@ export const uploadImage: AppRouteHandler<UploadImageRoute> = async (c) => {
     const contentType = formData.file.type || 'application/octet-stream'
 
     // Generate a unique ID for both storage and database
-    const objectId = generateObjectId()
+    const objectId = generateUniqueId()
     const externalId = generateExternalId()
 
     // Get normalized filename considering all sources
@@ -64,6 +64,8 @@ export const uploadImage: AppRouteHandler<UploadImageRoute> = async (c) => {
         ...c.get('requestMetadata'),
         method: 'upload',
       },
+      properties: formData.properties,
+      tags: formData.tags,
     })
 
     return c.json(fileRecord, 201)

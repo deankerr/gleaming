@@ -17,8 +17,15 @@ export const getFileInfo: AppRouteHandler<GetFileInfoRoute> = async (c) => {
       throw notFound('File')
     }
 
+    const properties = await db.getFileProperties(file.objectId)
+    const tags = await db.getFileTags(file.objectId)
+
     // Return the file metadata
-    return c.json(file, 200)
+    return c.json({
+      ...file,
+      properties: Object.fromEntries(properties.map(p => [p.key, p.value])),
+      tags: tags.map(t => t.key.replace('tag_', '')),
+    }, 200)
   }
   catch (error) {
     console.error('Error retrieving image:', error)

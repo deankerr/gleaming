@@ -1,0 +1,1971 @@
+---
+description: Comprehensive and up to date guide on using Cloudflare D1
+globs: 
+alwaysApply: false
+---
+# Query a database
+
+URL: https://developers.cloudflare.com/d1/best-practices/query-d1/
+
+D1 is compatible with most SQLite's SQL convention since it leverages SQLite's query engine. You can use SQL commands to query D1.
+
+There are a number of ways you can interact with a D1 database:
+
+1. Using @D1 Workers Binding API in your code.
+2. Using @D1 REST API.
+3. Using @D1 Wrangler commands.
+
+## Use SQL to query D1
+
+D1e semantics, which allows you to query a database using SQL statements via Workers BindingAPI or REST API (including Wrangler commands). Refer to @D1 SQL API to learn more about supported SQL statements.
+
+### Query JSON
+
+D1 allows you to query and paFor example, you can extract a value inside a JSON object.
+
+Given the following JSON object (`type:blob`) in a column named `sensor_reading`, you can extract values from it directly.
+
+```json
+{
+    "measurement": {
+        "temp_f": "77.4",
+        "aqi": [21, 42, 58],
+        "o3": [18, 500],
+        "wind_mph": "13",
+        "location": "US-NY"
+    }
+}
+```
+```sql
+-- Extract the temperature value
+SELECT json_extract(sensor_reading, '$.measurement.temp_f')-- returns "77.4" as TEXT
+```
+
+Refer to @Query JSON to learn more about querying JSON objects.
+
+## Query D1 with Workers Binding API
+
+Workers Binding API primarily interacts with the data plane, and allows you to query your D1 database from your Worker.
+
+This requires you to:
+
+1. Bind your D1 database to your Worker.
+2. Prepare a statement.
+3. Run the statement.
+
+```js title="index.js"
+export default {
+    async fetch(request, env) {
+        const {pathname} = new URL(reql);
+        const compan     const companyName2 = `Around the Horn`;
+        const stmt = env.DB.prepare(`SELECT * FROM Customers WHERE CompanyName = ?`);
+
+        if (pathname === `/RUN`) {
+            const returnValue = await stmt.bind(companyName1).run();
+            return Response.json(returnValue);
+        }
+
+        return new Response(
+            `Welcome to the D1 API Playground!
+						\nChange the URL to test the various methods inside your index.js file.`,
+        );
+    },
+};
+```
+
+Refer to @Workers Binding API for more information.
+
+## Query D1 with REST API
+
+REST API primarily itrol plane, and allows you to create/manage your D1 database.
+
+Refer to @D1 REST API for D1 REST API documentation.
+
+---
+
+# Use indexes
+
+URL: https://developers.cloudflare.com/d1/best-practices/use-indexes/
+
+import { GlossaryTooltip } from "~/components";
+
+Indexes enable D1 to improve query performance over the indexed columns for common (popular) queries by reducing the amount of data (number of rows) the database has to scan when running a query.
+
+## When is an ies are useful:
+
+* When you want to improve the read performance over columns that are regularly used in predicates - for example, a `WHERE email_address = ?` or `WHERE user_id = 'a793b483-df87-43a8-a057-e5286d3537c5'` - email addresses, usernames, user IDs and/or dates are good choices for columns to index in typical web applications or services.
+* For enforcing uniqueness constraints on a column or columns - for example, an email address or user ID via the `CREATE UNIQUE INDEX`.
+* In cases where you query over multiple columns together - `(customer_id, transaction_date)`.
+
+Indexes are automatically updated when the table and column(s) they reference are inserted, updated or deleted. You do not need to manuate an index after you write to the table it references.
+
+## Considerations
+
+Take note of the following considerations when creating indexes:
+
+* Indexes are not always a free performance boost. You should create indexes only on columns that reflect your most-queried columns. Indexes themselves need to be maintained. When you write to an indexed column, the database needs to write to the table and the index. The performance benefit of an index and reduction in rows read will, in nearly all cases, offset this additional write.
+* You cannot create indexes that reference other tables or use non-deterministic functions, since the index would not be stabledated. To add or remove a column from an index, @remove the index and then @create a new index with the new columns.
+* Indexes contribute to the overall storage required by your database: an index is effectively a table itself.
+
+---
+
+## View logs
+
+View a stream of live logs from your Worker by using @`wrangler tail` or via the @Cloudflare dashboard.
+
+---
+
+# Query D1 from Hono
+
+URL: https://developers.cloudflare.com/d1/examples/d1-and-hono/
+
+import { TabItem, Tabs } from "~/components";
+
+Hono is a fast web framework for building Aapplications, and it includes first-class support for both @Workers and @Pages.
+
+When using Workers:
+
+- Ensure you have configured your @Wrangler configuration file to bind your D1 database to your Worker.
+- You can access your D1 databases via Hono's @`Context` parameter: gs are exposed on `context.env`. If you configured a @binding named `DB`, then you would access @D1 Workers Binding API methods via `c.env.DB`.
+- Refer to the Hono documentation for @Cloudflare Workers.
+
+If you are using @Pages Functions:
+
+1. Bind a D1 database to your @Pages Function.
+2. Pass the `--d1 BINDING_NAME=DATABASE_ID` flag to `wrangler dev` when developing locally. `BINDING_NAME` should match what call in your code, and `DATABASE_ID` should match the `database_id` defined in your Wrangler cond1 DB=xxxx-xxxx-xxxx-xxxx-xxxx`.
+3. Refer to the Hono guide for @Cloudflare Pages.
+
+The following examples show how to access a D1 database bound to `DB` from both a Workers script and a Pa> <TabItem label="workers">
+
+```ts
+import { Hono } from "hono";
+
+// This ensures c.env.DB is correctly typed
+type Bindings = {
+	DB: D1Database;
+};
+
+const app = new Hono<{ Bindings: Bindings }>();
+
+// Accessing D1 is via the c.env.YOUR_BINDING property
+app.get(async (c) => {
+	const userId = c.req.param("id" { results } = await c.env.DB.preers WHERE user_id = ?",
+		)
+			.bind(userId)
+			.all();
+		return c.json(results);
+	} catch (e) {
+		return c.json({ err: e.message }, 500);
+	}
+});
+
+// Export our Hono app: Hono automatically exports a
+// Workers 'fendler for you
+export default app;
+```
+
+</TabItem> <TabItem label="pages">
+
+```ts
+import { Hono } from "hono";
+import { handle } from "hono/cloudflare-pages";
+
+const app = new Hono().basePath("/api");
+
+// Ac D1 is via the c.env.YOUR_BINDING property
+app.get("/query/users/:id", async (c) => {
+	const userId = c.req.param("id");
+	try {
+		let { results } = await c.env.DB.prepare(
+			"SELECT * FROM users WHERE user_id = ?",
+		)
+			.bind(userId)
+			.all();
+		return c.json(results);
+	} catch (e) {
+		return c.json({ err: e.message }, 500);
+	}
+});
+
+// Export the Hono instance as a Pages onRequest function
+export const onRequest = handle(app);
+```
+
+</TabItem> </Tabs>
+
+---
+
+## Frequently Asked Questions
+
+Frequently asked questions related to D1 limi D1 database do?
+
+D1 is designed for horizontal scale out across multiple, smaller (10 GB) databases, such as per-user, per-tenant or per-entity databases. D1 allows you to build applications with thousands of databases at no extra cost for isolating with multiple databases, as the pricing is based only on query and storage costs.
+
+- Each D1 database can store up to 10 GB of data, and you can create up to thousands of separate D1 databases. This allows you to split a single monolithic database into multiple, smaller databases, thereby isolating application data by user, customer, or tenant.
+- SQL queries over a smaller working data set can be more efficient and performant while improving data isolation.
+
+---
+
+# Migrations
+
+URL: https://developers.cloudflare.com/d1/reference/migrations/
+
+import { WranglerConfig } from "~/components";
+
+Database migrations are a way of versioning your database. Each migration is stored as an `.sql` file in your `migrations` folder. The `migrations` folder is created in your project directory when you create your first migration. This enables you to store and track changes throughout database development.
+
+## Features
+
+Currently, the migrations system aims to be simple yet effective. With the current implementation, you can:
+
+* @Create an empty migration file.
+* @List unapplied migrations.
+* @Apply remaining migrations.
+
+Every migration file in the `migrations` folder has a specified version number in the filename. Files are listed in sequential order. Every migration file is an SQL file where you can specify queries to be run.
+
+## Wrangler customizations
+
+By default, migrations are created in the `migrations/` folder in your Worker project directory. Creating migrations will keep a record of applied migrations in the `d1_migrations` table found in your database.
+
+This location and table name can be customized in your Wrangler file, inside the D1 binding.
+
+<WranglerConfig>
+
+```toml
+[[ d1_databases ]]
+binding = "<BINDING_NAME>" # i.e. if you set this to "DB", it will be available in your Worker at `env.DB`
+database_name = "<DATABASE_NAME>"
+database_id = "<UUID>"
+preview_database_id = "<UUID>"
+migrations_table = "<d1_migrations>" # Customize this value to change your applied migrations table name
+migrations_dir = "<FOLDER_NAME>" # Specify your custom migration directory
+```
+
+</WranglerConfig>
+
+## Foreign key constraints
+
+When applying a migration, you may need to temporarily disable @foreign key constraints. To do so, call `PRAGMA defer_foreign_keys = true` before making changes that would violate foreign keys.
+
+Refer to the @foreign key documentation to learn more about how to work with foreign keys and D1.
+
+---
+
+# Query JSON
+
+URL: https://developers.cloudflare.com/d1/sql-api/query-json/
+
+D1 has buiupport for querying and parsing JSON data stored within a database. This enables you to:
+
+* @Query paths within a stored JSON object - for example, extracting the value of named key or array index directly, which is especially useful with larger JSON objects.
+* Insert and/or replace values within an object or array.
+* @Expand the contents of a JSON object or array into multiple rows - for example, for use as part of a `WHERE ... IN` predicate.
+* Create @generated columns that are automatically populated with values from JSON objects you insert.
+
+One of the biggest benefits to parsing JSON within D1 directly is that it can directly reduce the number of round-trips (queries) to your database. It reduces the cases where you have to read a JSON object into your application (1), parse it, and then write it back (2).
+
+This allows you to more precisely query over data and reduce the result set your application needs to additionally parse and filter on.
+
+## Types
+
+JSON data is stored as a `TEXT` column in D1. JSON types follow the same @type conversion rules as D1 in general, including:
+
+* A JSON null is treated as a D1 `NULL`.
+* A JSON number is treated as an `INTEGER` or `REAL`.
+* Booleans are treated as `INTEGER` values: `true` as `1` and `false` as `0`.
+* Object and array values as `TEXT`.
+
+## Supported functions
+
+The following table outlines the JSON functions built into D1 and example usage.
+
+* The `json` argument placeholder can be a JSON object, array, string, number or a null value.
+* The `value` argument accepts string literals (only) and treats input as a string, even if it is well-formed JSON. The exception to this rule is when nesting `json_*` functions: the outer (wrapping) function will interpret the inner (wrapped) functions return value as JSON.
+* The `path` argument accepts path-style traversal syntax - for example, `$` to refer to the top-level object/array, `$.key1.key2` to refer to a nested object, and `$.key[2]` to index into an array.
+
+| Function                                                    | Description                                                                                                                        | Example                                                                    |
+| ----------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `json(json)`                                                | Validates the provided string is JSON and returns a minified version of that JSON object.                                                                      | `json('{"hello":["world" ,"there"] }')` returns `{"hello":["world","there"]}`             |
+| `json_array(value1, value2, value3, ...)`                   | Return a JSON array from the values.                                                                                                                           | `json_array(1, 2, 3)` returns `[1, 2, 3]`                                                 |
+| `json_array_length(json)` - `json_array_length(json, path)` | Return the length of the JSON array                                                                                                                            | `json_array_length('{"data":["x", "y", "z"]}', '$.data')` returns `3`                     |
+| `json_extract(json, path)`                                  | Extract the value(s) at the given path using `$.path.to.value` syntax.                                                                                         | `json_extract('{"temp":"78.3", "sunset":"20:44"}', '$.temp')` returns `"78.3"`            |
+| `json -> path`                                              | Extract the value(s) at the given path using path syntax and return it as JSON.                                                                                |                                                                     
+| `json ->> path`                                             | Extract the value(s) at the given path using path syntax and return it as a SQL type.                                                                          |                                                                                           |
+| `json_insert(json, path, value)`                            | Insert a value at the given path. Does not overwrite an existing value.                                                                                        |                                                                                           |
+| `json_object(label1, value1, ...)`                          | Accepts pairs of (keys, values) and returns a JSON object.                                                                                                     | `json_object('temp', 45, 'wind_speed_mph', 13)` returns `{"temp":45,"wind_speed_mph":13}` |
+| `json_patch(target, patch)`                                 | Uses a JSON @MergePatch approach to merge the provided patch into the target JSON object.                                |                                                                                           |
+| `json_remove(json, path, ...)`                              | Remove the key and value at the specified path.                                                                                                                | `json_remove('[60,70,80,90]', '$[0]')` returns `70,80,90]`                                |
+| `json_replace(json, path, value)`                           | Insert a value at the given path. Overwrites an existing value, but does not create a new key if it doesn't exist.                                             |                                                                                           |
+| `json_set(json, path, value)`                               | Insert a value at the given path. Overwrites an existing value.                                                                                                |                                                                                           |
+| `json_type(json)` - `json_type(json, path)`                 | Return the type of the provided value or value at the specified path. Returns one of `null`, `true`, `false`, `integer`, `real`, `text`, `array`, or `object`. | `json_type('{"temperatures":[73.6, 77.8, 80.2]}', '$.temperatures')` returns `array`      |
+| `json_valid(json)`                                          | Returns 0 (false) for invalid JSON, and 1 (true) for valid JSON.                                                                                               | `json_valid({invalid:json})`returns`0\`                                                  |
+| `json_quote(value)`                                         | Converts the provided SQL value into its JSON representation.                                                                                                  | `json_quote('[1, 2, 3]')` returns `[1,2,3]`                                               |
+| `json_group_array(value)`                                   | Returns the provided value(s) as a JSON array.                                                                                                                 |                                                                                           |
+| `json_each(value)` - `json_each(value, path)`               | Returns each element within the object as an individual row. It will only traverse the top-level obje               |                                           |
+| `json_tree(value)` - e, path)`   ent within the object as an individual row. It traverses the full object.                                                                     |                                                                                           |
+
+The SQLite @JSON extension, on which D1 builds on, has additional usage examples.
+
+## Error Handling
+
+JSON functions will return a `malformed JSON` error when operating over data that isn't JSON and/or is not valid JSON. D1 considers valid JSON to be @RFC 7159 conformant.
+
+In the following example, calling `json_extract` over a string (not valid JSON) will cause the query to return a `malformed JSON` error:
+
+```sql
+SELECT json_extract('not valid JSON: just a string', '$')
+```
+
+This will return an error:
+
+```txt
+ERROR 9015: SQL engine error: query error: Eg database (malrated columnsd columns allow crenamic columns that are generated based on the values of other columns, including extracted or calculated values of JSON data.
+
+These columns can be queried like any other column, and can have @indexes defined on them. If you have frequently query and filter over, creating a generated column and an index can dramatically improve query performance.
+
+For example, to define a column based on a value within a larger JSON object, use the `AS` keyword combined with a @JSON function to generate a typed column:
+
+```sql
+CREATE TABLE some_table (
+    -- other columns omitted
+    raw_data TEXT -- JSON: {"measurement":{"aqi":[21,42,58],"wind_mph":"13","location":"US-NY"}}
+    location AS (json_extract(raw_data, '$.measurement.location')) STORED
+)
+```
+
+Refer to @Generated columns to learn more about how to generate columns.
+
+## Example usage
+
+### Extract values
+
+There are three ways to extract a value from a JSON object in D1:
+
+* The `json_extract()` function - for example, `json_extract(text_column_containing_json, '$.path.to.value)`.
+* The `->` operator, which returns a JSON representation of the value.
+* The `->>` operator, which returns an SQL representation of the value.
+
+The `->` and `->>` operators functions both operate similarly to the same operators in PostgreSQL and MySQL/MariaDB.
+
+Given the following JSON object in a column named `sensor_reading`, you can extract values from it directly.
+
+```json
+{
+    "measurement": {
+        "temp_f": "77.4",
+        "aqi": [21, 42, 58],
+        "o3": [18, 500],
+        "wind_mph": "13",
+        "location": "US-NY"
+    }
+}
+```
+
+```sql
+-- Extract the temperature value
+json_extract(sensor_reading, '$.measurement.temp_f')-- returns "77.4" as TEXT
+```
+
+```sql
+-- Extract the maximum PM2.5 air quality reading
+sensor_reading -> '$.measurement.aqi[3]' -- returns 58 as a JSON number
+```
+
+```sql
+-- Extract the o3 (ozone) array in full
+sensor_reading -\-> '$.measurement.o3' -- returns '[18, 500]' as TEXT
+```
+
+### Get the length of an array
+
+You can get the length of a JSON array in two ways:
+
+1. By calling `json_array_length(value)` directly
+2. By calling `json_array_length(value, path)` to specify the path to an array within an object or outer array.
+
+For example, given the following JSON object stored in a column called `login_history`, you could get a count of the last logins directly:
+
+```json
+{
+    "user_id": "abc12345",
+    "previous_logins": ["2023-03-31T21:07:14-05:00", "2023-03-28T08:21:02-05:00", "2023-03-28T05:52:11-05:00"]
+}
+```
+
+```sql
+json_array_length(login_history, '$.previous_logins') --> returns 3 as an INTEGER
+```
+
+You can also use `json_array_length` as a predicate in a more complex query - for example, `WHERE json_array_length(some_column, '$.path.to.value') >= 5`.
+
+### Insert a value into an existing object
+
+You can io an existing JSON object or array using `json_insert()`. For example, if you have a `TEXT` column called `login_history` in a `users` table containing the following object:
+
+```json
+{"history": ["2023-05-13T15:13:02+00:00", "2023-05-14T07:11:22+00:00", "2023-05-15T15:03:51+00:00"]}
+```
+
+To add a new timestamp to the `history` array within our `login_history` column, write a query resembling the following:
+
+```sql
+UPDATE users
+SET login_history = json_insert(login_history'2023-05-15T20:33:06+00:00')
+WHERE user_id = 'aba0e360-1e04-41b3-91a0-1f2263e1e0fb'
+```
+
+Provide three arguments to `json_inser column containing the JSON you want to modify.
+2. The path to the key within the object to modify.
+3. The JSON value to insert. Using `[#]` tells `json_insert` to append to the end of you use `json_replace()`, which will overwrite an existing key-value pair if one already exists. To set a value regardless of whether it already exists, use `json_set()`.
+
+### Expand arrays for IN queries
+
+Use `json_each` to expand an array into multiple rows. This can be useful when composing a `WHERE column IN (?)` query over several values. For example, if you wanted to update a list of users by their integer `id`, use `json_each` to return a table with each value as a column called `value`:
+
+```sql
+UPDATE users
+SET last_audited = '2023-05-16T11:24:08+00:00'
+WHERE id IN (SELECT value FROM json_each('[183183, 13913, 94944]'))
+```
+
+This would extract only the `value` column from the table returned by `json_each`, with each row representing the user IDs you passed in as an array.
+
+`json_each` effectively returns a table with multiple columns, with the most relevant being:
+
+* `key` - the key (or index).
+* `value` - the literal value of each element parsed by `json_each`.
+* `type` - the type of the value: one of `null`, `true`, `false`, `integer`, `real`, `text`, `array`, or `object`.
+* `fullkey` - the full path to the element: e.g. `$[1]` for the second element in an array, or `$.path.to.key` for a nested object.
+* `path` - the top-level path - `$` as the path for an element with a `fullkey` of `$[0]`.
+
+In this example, `SELECT * FROM json_each('[183183, 13913, 94944]')` would return a table resembling the below:
+
+```sql
+key|value|type|id|fullkey|path
+0|183183|integer|1|$[0]|$
+1|13913|integer|2|$[1]|$
+2|94944|integer|3|$[2]|$
+```
+
+You can use `json_each` with @D1 Workers Binding API in a Worker by creating a statement and using `JSON.stringify` to pass an array as a @bound parameter:
+
+```ts
+const stmt = context.env.DB
+    .prepare("UPDATE users SET last_audited = ? WHERE id IN (SELECT value FROM json_each(?1))")
+const resp = await stmt.bind(
+    "2023-05-16T11:24:08+00:00",
+    JSON.stringify([183183, 13913, 94944])
+    ).run()
+```
+
+This would only update row `id` matches one of the three provided.
+
+---
+
+# SQL statements
+
+URL: https://developers.cloudflare.com/d1/sql-api/sqlport { Details, Render } from "~/components";
+
+D1 is compatible with most SQLite's SQL convention since it leverages SQLite's query engine. D1 supports a number of database-level statements that allow you to list tables, schema for a given table or index.
+
+You can execute any of these statements via the D1 console in the Cloudflare dashboard, @`wrangler d1 execute`, or with the @D1 Worker Bindings API.
+
+## Supported SQLite extensions
+
+D1 supports a subset of SQLite extensions for added functionality, including:
+
+- Default SQLite extensions.
+- @FTS5 module for full-text search.
+
+## Compatible PRAGMA statements
+
+D1 supports some @SQLite PRAGMA statements. The PRAGMA statement is an SQL extension for SQLite. PRAGMA commands can be used to:
+
+- Modify the behavior of certain SQLite operations.
+- Query the SQLite library for internal data about schemas or tables (but note that PRAGMA statements cannot query the contents of a table).
+- Control environmental variables.
+
+<Render file="use-pragma-statements" />
+
+## Query `sqlite_master`
+
+You can also ble to show all tables, indexes, and the original SQL used to generate them:
+
+```sql
+SELECT name, sql FROM sqlite_master
+```
+
+```json
+      {
+        "name": "users",
+        "sql": "CREATE TABLE users ( user_id INTEGER PRIMARY KEY, email_address TEXT, created_at INTEGER, deleted INTEGER, settings TEXT)"
+      },
+      {
+x_ordered_users",
+        "sql": "CREATE INDEX idx_ordered_users ON users(created_at DESC)"
+      },
+      {
+        "name": "Order",
+        "sql": "CREATE TABLE \"Order\" ( \"Id\" INTEGER PRIMARY KEY, \"CustomerId\" VARCHAR(8000) NULL, \"EmployeeId\" INTEGER NOT NULL, \"OrderDate\" VARCHAR(8000) NULL, \"RequiredDate\" VARCHAR(8000) NULL, \"ShippedDate\" VARCHAR(8000) NULL, \"ShipVia\" INTEGER NULL, \"Freight\" DECIMAL NOT NULL, \"ShipName\" VARCHAR(8000) NULL, \"ShipAddress\" VARCHAR(8000) NULL, \"ShipCity\" VARCHAR(8000) NULL, \"ShipRegion\" VARCHAR(8000) NULL, \"ShipPostalCode\" VARCHAR(8000) NULL, \"ShipCountry\" VARCHAR(8000) NULL)"
+      },
+      {
+        "name": "Product",
+        "sql": "CREATE TABLE \"Product\" ( \"Id\" INTEGER PRIMARY KEY, \"ProductName\" VARCHAR(8000) NULL, \"SupplierId\" INTEGER NOT NULL, \"CategoryId\" INTEGER NOT NULL, \"QuantityPerUnit\" VARCHAR(8000) NULL, \"UnitPrice\" DECIMAL NOT NULL, \"UnitsInStock\" INTEGER NOT NULL, \"UnitsOnOrder\" INTEGER NOT NULL, \"ReorderLevel\" INTEGER NOT NUtinued\" INTEGER NOT NULL)"
+      }
+```
+
+## Search with LIKE
+
+You can perform a search using SQL's `LIKE` operator:
+
+```js
+const { results } = await env.DB.prepare(
+	"SELECT * FROM Customers WHERE CompanyName LIKE ?",
+)
+	.bind("%eve%")
+	.all();
+console.log("results: ", results);
+```
+```js output
+results:  [...]
+```
+
+---
+
+# D1 Database
+
+URL: https:///worker-api/d1-database/
+
+import { Type, MetaInfo, Details } from "ents";
+
+To interact with your D1 database from your Worker, you need to access it through the environment bindings provided to the Worker (`env`).
+
+```js
+async fetch(request, env) {
+	// D1 database is 'env.DB', where "DB" is the binding name from the Wrangler configuration file.
+}
+```
+
+A D1 binding has the type `D1Database`, and supports a number of methods, as listed below.
+
+## Methods
+
+### `prepare()`
+
+Prepares a query statement to be later executed.
+
+```js
+const someVariable = `Bs Beverages`;
+const stmt = env.DB.prepare("SELECT * FROM Customers WHERE CompanyName = ?").bind(someVariable);
+```
+
+#### Parameters
+
+- <code>query</code>: <Type text="String"/> <MetaInfo text="Required"/>
+  - The SQL query you wish to execute on the database.
+
+#### Return values
+
+- <code>D1PreparedStatement</code>: <Type text="Object"/>
+  - An object which only contains methods. Refer to @Prepared statement methods.
+
+#### Guidance
+
+You  can use the `bind` method to dynamically bind a value into the query statement, as shown below.
+
+- Example of a static statement without using `bind`:
+
+	```js
+	const stmt = db
+		.prepare("SELECT * FROM Customers WHERE CompanyName = Alfreds Futterkiste AND CustomerId = 1")
+	```
+
+- Example of an ordered statement using `bind`:
+
+	```js
+	const stmt = db
+		.prepare("SELECT * FROM Customers WHERE CompanyName = ? AND CustomerId = ?")
+		.bind("Alfreds Futterkiste", 1);
+	```
+
+Refer to the @`bind` method documentation for more information.
+
+### `batch()`
+
+Sends multiple SQL statements inside a single call to the database. This can have a huge performance impact as it reduces ld trips to D1. D1 operates in auto-commit. Our implementation guarantees that each statement in the list will execute and-concurrently.
+
+Batched statements are @SQL transactions. If a statement in the sequence failr is returned for that specificlls back the entire sequence.
+
+To send b`D1Database::batch` a list of prepared statements and get the results in the same order.
+
+```js
+const companyName1 = `Bs Beverages`;
+const companyName2 = `Around the Horn`;
+const stmt = env.DB.prepare(`SELECT * FROM Customers WHERE CompanyName = ?`);
+const batchResult = await env.DB.batch([
+	stmt.bind(companyName1),
+	stmt.bind(companyName2)
+]);
+```
+
+#### Parameters
+
+- <code>statements</code>: <Type text="Array"/>
+  - An array of @`D1PreparedStateme## Return values
+
+- <code>results</code>: <Type text="Array"/>
+  - An array of `D1Result` objects containing the results of the @`D1Database::prepare` statements. Each objarray position corresponding to the array position of the initial @`D1Dpare` statement within the `statements`.
+  - Refer to @`D1Result` for more information about this object.
+
+<Details header="Example of return values" open={false}>
+
+```js
+const companyName1 = `Bs Beverages`;
+const companyName2 = `Around the Horn`;
+const stmt = await env.Denv.DB.prepare(`SELECT * FROM Customers WHERE CompanyName = ?`).bind(companyName1),
+	env.DB.prepare(`SELECT * FROM Customers WHERE CompanyName = ?`).bind(companyName2)
+]);
+return Response.json(stmt)
+```
+```js output
+[
+  {
+    "success": true,
+    "meta": {
+      "served_by": "miniflare.db",
+      "duration": 0,
+      "changes": 0,
+      "last_row_id": 0,
+      "changed_db": false,
+      "size_after": 8192,
+      "rows_read": 4,
+      "rows_written": 0
+    },
+    "results": [
+      {
+        "CustomerId": 11,
+        "CompanyName": "Bs Beverages",
+        "ContactName": "Victoria Ashworth"
+      },
+      {
+        "CustomerId": 13,
+        "CompanyName": "Bs Beverages",
+        "ContactName": "Random Name"
+      }
+    ]
+  },
+  {
+    "success": true,
+    "meta": {
+      "served_by": "miniflare.db",
+      "duration": 0,
+      "changes": 0,
+      "last_row_id": 0,
+      "changed_db": false,
+      "size_after": 8192,
+  ows_written": 0
+    },
+    "results": [
+      {
+        "CustomerId": 4,
+        "CompanyName": "Around the Horn",
+        "ContactName": "Thomas Hardy"
+      }
+    ]
+  }
+]
+```
+```js
+console.log(stmt[1].results);
+```
+```js output
+[
+  {
+    "CustomerId": 4,
+    "CompanyName": "Around the Horn",
+    "ContactName": "Thomas Hardy"
+  }
+]
+```
+</Details>
+
+#### Guidance
+
+- You can construct batches reusing the same prepared statement:
+
+	```js
+		const companyName1 = `Bs Beverages`;
+		const companyName2 = `Around the Horn`;
+	`SELECT * FROM Customers WHERE CompanyName = ?`);
+		const batchResult = await env.DB.batch([
+			stmt.bind(companyName1),
+			stmt.bind(companyName2)
+		]);
+		returatchResult);
+	```
+
+### re queries directly without prepared statements or parameter bindings.
+
+```js
+const returnValue = await env.DB.exec(`SELECT * FROM Customers WHERE CompanyName = "Bs Beverages"`);
+```
+
+#### Parameters
+
+- <code>query</code>: <Type text="String"/> <MetaInfo text="Required"/>
+  - The SQL query statement without param## Return vacode>: <Type text="Object"/>
+  - The `count` property contains the number of executed queries.
+  - The `duration` property contains the duration of operation in milliseconds.
+	- Refer to @`D1ExecResult` for more information.
+
+<Details header="Example of return values" open={false}>
+```js
+const returnValue = await env.DB.exec(`SELECT * FROM Customers WHERE CompanyName = "Bs Beverages"`);
+return Response.json(returnValue);
+```
+```js output
+{
+  "count": 1,
+  "duration": 1
+}
+```
+</Details>
+
+#### Guidance
+
+- If an error occurs, an exception is thrown with the query and error messages, execution stops and further statements are not executed. Refer to @Errors to learn more.
+- This method can have poorer performance (prepared statements can be reused in some cases) and, more importantly, is less safe.
+- Only use this method for maintenance and one-shot tasks (for example, migration jobs).
+- The input can be one or multiple queries separated by `\n`.
+
+---
+
+# Workers Binding API
+
+URL: https://developers.cloudflare.com/d1/worker-api/
+
+import { DirectoryListing, Details, Steps } from "~/components";
+
+You can execute SQL queries on your D1 database from a Worker using the Worker Binding API. To do this, you can perform the following steps:
+
+1. @Bind the D1 Database.
+2. @Prepare a statement.
+3. @Run the prepared statement.
+4. Analyze the @return object (if necessary).
+
+Refer to the relevant sections for the API documentation.
+
+## TypeScript support
+
+D1 Worker Bindings API is fully-typed via the @`@cloudflare/workers-types` package, and also supports @generic types as part of its TypeScript API. A generic type allows you to provide an optional `type parameter` so that a function understands the type of the data it is handling.
+
+When using the query statement methods @`D1PreparedStatement::run`, @`D1PreparedStatement::raw` and edStatement::first`, you can provide a type representing each database row. D1's API will @return the result object with the correct type.
+
+For exa an `OrderRow` type as a type parameter to @`D1PreparedStatement::run` will return a typed `Array<OrderRow>` object instead of the default `Record<string, unknown>` type:
+
+```ts
+// Row definition
+type OrderRow = {
+Id: string;
+CustomerName: string;
+OrderDate: number;
+};
+
+// Elsewhere in your application
+const result = await env.MY_DB.prepare(
+"SELECT Id, CustomerName, OrderDate FROM [Order] ORDER BY ShippedDate DESC LIMIT 100",
+).run<OrderRow>();
+```
+
+## Type conversion
+
+D1 automatically converts supported JavaScript (including TypeScript) types passed as parameters via the Workers Binding API to their associated D1 types. The type conversion is as follows:
+
+| JavaScript           | D1                                                          |
+| ---------------------------------------------------------------------------------------- |
+| null                 | `NULL`                                                                       |
+| Number               | `REAL`                                                                       |
+| Number <sup>1</sup>  | `INTEGER`                                                                    |
+| String               | `TEXT`                                                                       |
+| Boolean <sup>2</sup> | `INTEGER`                                                                    |
+| ArrayBuffer          | `BLOB`                                                                       |
+| undefined            | Not supported. Queries with `undefined` values will return a `D1_TYPE_ERROR` |
+
+<sup>1</sup> D1 supports 64-bit signed `INTEGER` values internally, however
+@BigInts
+are not currently supported in the API yet. JavaScript integers are safe up to
+@`Number.MAX_SAFE_INTEGER`.
+
+<sup>2</sup> Booleans will be cast to an `INTEGER` type where `1` is `TRUE` and
+`0` is `FALSE`.
+
+## API playground
+
+The D1 Worker Binding API playground is an `index.js` file where you can test each of the documented Worker Binding APIs for D1. The file builds from the end-state of the @Get started code.
+
+You can use this alongside the API documentation to better understand how each API works.
+
+Follow the steps to setup your API playground.
+
+### 1. Complete the Get started tutorial
+
+Complete the @Get started tutorial. Ensure you use JavaScript instead of TypeScript.
+
+### 2. Modify the content of `index.js`
+
+Replace the contents of your `index.js` file with the code below to view the effect of each API.
+
+<Details header="index.js" open={false}>
+```js
+export default {
+	async fetch(request, env) {
+	  const { pathname } = new URL(request.url);
+
+	//   if (pathname === "/api/beverages") {
+	// 	// If you did not use `DB` as your binding name, change it here
+	// 	const { results } = await env.DB.prepare("SELECT * FROM Customers WHERE CompanyName = ?",).bind("Bs Beverages").all();
+	// 	return Response.json(results);
+	//   }
+
+		const companyName1 = `Bs Beverages`;
+		const companyName2 = `Around the Horn`;
+		const stmt = env.DB.prepare(`SELECT * FROM Customers WHERE CompanyName = ?`);
+
+	  if (pathname ==t returnValue = await stmt.bind(companyName1).run();
+		return Response.json(returnValue);
+
+	} else if /RAW`){
+		const returnValue = await stmt.bind(companyName1).raw();
+		return RernValue);
+
+	} else if = `/FIRST`){
+		const returnValue = await stmt.bind(companyName1).first();
+		return Response.json(returnValue);
+
+	} else if (pathname === `/BATCH`) {
+		const batchResult = await env.DB(companyName1),
+			stmt.bind(companyName2)
+		]);
+		return Response.json(batchResult);
+
+	} else if (pathname === `/EXEC`){
+		const returnValue = await env.DB.exec(`SELECT * FROM Customers WHERE CompanyName = "Bs Beverages"`);
+		return Response.json(returnValue);
+	}
+
+	  return new Response(
+		`Welcome to the D1 API Playground!
+		\URL to test the various methods inside your index.js file.`,
+	  );
+	},
+};
+
+```
+<loy the Worker
+
+<Steps>
+1. Navigateated by following step 1.
+2. Run `npx wrangler dev`.
+	```sh
+	npx wrangler dev
+	```
+	```sh output
+	 â›…ï¸ wrangler 3.85.0 (update available 3.86.1)
+	-------------------------------------------------------
+
+	Your worker has access to the following bindings:
+	- D1 Databases:
+		- DB: <DATABASE_NAME> (DATABASE_ID) (local)
+	âŽ” Starting local server...
+	[wrangler:inf] Ready on http://localhost:8787
+	â•­â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â•®
+	â”‚  [b] open a browser       â”‚
+	â”‚  [d] open devtools        â”‚
+	â”‚  [l] turn off local mode  â”‚
+	â”‚  [c] clear console        â”‚
+	â”‚  [x] to exit              â”‚
+	â•°â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â•¯
+	```
+3. Open a browser at the s.
+</Steps>
+
+### 4. Te
+Change the URL to test the various D1 Worker Binding APIs.
+
+---
+
+# Prepared statement methods
+
+URL: https://developers.cloudflare.com/d1/worker-api/prepared-statements/
+
+import { Type, MetaInfo, Details } from "~/components";
+
+This chapter documents the various ways you can run and retrieve the results of a query after you have @prep# Methods
+
+### `bind()`
+ameter to t.
+
+```js
+const someVariable = `Bs Beverages`;
+const stmt = env.DB.prepare("SELECT * FROM Customers WHERE CompanyName = ?").bind(someVariable);
+```
+
+#### Parameter
+
+- <code>Variable</code>: <Typing"/>
+  - The variable to be appended into the prepared statement. See @guidance below.
+
+#### Return values
+
+- <code>D1PreparedStatement</code>: <Type text="Object"/>
+  - A `D1PreparedStatement` where the input parameter has been included in the statement.
+
+#### Guidance
+
+- D1 follows the @SQLite convention for prepared statements parameter binding. Currently, D1 only supports Ordered (`?NNNN`) and Anonymous (`?`) parameters. In the future, D1 will support named parameters as well.
+
+	| Syntax | Type      | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+	| ------ | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+	| `?NNN` | Ordered   | A question mark followed by a number `NNN` holds a spot for the `NNN`-th parameter. `NNN` must be between `1` and `SQLITE_MAX_VARIABLE_NUMBER`                                                                                                                                                                                                                                                                                                                                                                                                    |
+	| `?`    | Anonymous | A question mark that is not followed by a number creates a parameter with a number one greater than the largest parameter number already assigned. If this means the parameter an `SQLITE_MAX_VARIABLE_NUMBER`, it is an error. This parameter format is provided for compatibility with other database engines. But because it is easy to miscountn marks, the use of this parameter format is discouraged. Programmers are encouraged to use one of the symbolic formats below or the `?NNN` format above instead. |
+
+	To bind a parameter, use the `.bind` method.
+
+	Order and anonymous examples:
+
+	```js
+	const stmt = db.prepare("SELECT * FROM Customers WHERE CompanyName = ?").bind("");
+	```
+
+	```js
+	const stmt = db
+		.prepare("SELECT * FROM Customers WHERE CompanyName = ? AND CustomerId = ?")
+		.bind("Alfreds Futterkiste", 1);
+	```
+
+	```js
+	const stmt = db
+		.prepare("SELECT * FROM Customers WHERE CompanyName = ?2 AND CustomerId = ?1")
+		.bind(1, "Alfreds Futterkiste");
+	```
+
+#### Static statements
+
+D1 API supports static statements. Static statements are SQL statements where the variables have been hard coded. When writing a static statement, you manually type the variable within the statement string.
+
+:::note
+The recommended approach is to bind parameters to create a prepared statement (which are precompiled objects used by the database) to run the SQL. Prepared statements lead to faster overall execution and prevent SQL injection attacks.
+:::
+
+Example of a prepared statement with dynamically bound value:
+
+```js
+const someVariable = `Bs Beverages`;
+const stmt = env.DB.prepare("SELECT * FROM Customers WHERE CompanyName = ?").bind(someVariable);
+// A variable (someVariable) will replace the placeholder '?' in the query.
+// `stmt` is a prepared statement.
+```
+
+Example of a static statement:
+
+```js
+const stmt = env.DB.prepare("SELECT * FROM Customers WHERE CompanyName = Bs Beverages");
+// "Bs Beverages" is hard-coded into the query.
+// `stmt` is a static statement.
+```
+
+### `run()`
+
+Runs the prepared query (or queries) and returns results. The returned results includes metadata.
+
+```js
+const returnValue = await stmt.run();
+```
+
+#### Parameter
+
+- None.
+
+#### Return values
+
+- <code>D1Result</code>: <Type text="Object"/>
+  - An object containing the success status, a meta object, and an array of objects containing the query results.
+  - For more information on the object, refer to @`D1Result`.
+
+<Details header="Example of return values" open = {false}>
+```js
+const someVariable = `Bs Beverages`;
+const stmt = env.DB.prepare("SELECT * FROM Customers WHERE CompanyName = ?").bind(someVariable);
+const returnValue = await stmt.run();
+```
+```js
+return Response.json(returnValue);
+```
+```js output
+{
+  "success": true,
+  "meta": {
+    "served_by": "miniflare.db",
+    "duration": 1,
+    "changes": 0,
+    "last_row_id": 0,
+    "changed_db": false,
+    "size_after": 8192,
+    "rows_read": 4,
+    "rows_written": 0
+  },
+  "results": [
+    {
+      "CustomerId": 11,
+      "CompanyName": "Bs Beverages",
+      "ContactName": "Victoria Ashworth"
+    },
+    {
+      "CustomerId": 13,
+      "CompanyName": "Bs Beverages",
+      "ContactName": "Random Name"
+    }
+  ]
+}
+```
+</Details>
+
+#### Guidance
+
+- `results` is empty for write operations such as `UPDATE`, `DELETE`, or `INSERTg TypeScript, you can pass a @type parameter ` to return a typed result object.
+- @`D1PreparedStatement::run` is functionally equivalent to `D1PreparedStatement::all`, and can be treated as an alias.
+- You can choose to extract only the results you expect from the statement by simply returning the `results` property of the return object.
+
+returning only the `results`" open={false}>
+```js
+return Response.json(returnValue.results);
+```
+```js output
+[
+  {
+    "CustomerId": 11,
+    "CompanyName": "Bs Beverages",
+    "ContactName": "Victoria Ashworth"
+  },
+  {
+    "CustomerId": 13,
+    "CompanyName": "Bs Beverages",
+    "ContactNa}
+]
+```
+</Details>
+
+### `raw()`
+
+Ruries), and returns the results as an array of arrays. The returned results do not include metadata.
+
+Column names are not included in the result set by default. To include column names as the first row of the result array, set `.raw({columnNames: true})`.
+
+```js
+const returnValue = await stmt.raw();
+```
+
+#### Parameters
+
+- <code>columnNames</code>: <Type text="Object"/> <MetaInfo text="Optional"/>
+  - A boolean object which includes column names as the first row of the result array.
+
+#### Return values
+
+- <code>Array</code>: <Type text="Array"/>
+  - An array of arrays. Each sub-array represents a row.
+
+<Details header="Example of return values" open = {false}>
+```js
+const someVariable = `Bs Beverages`;
+const stmt = env.DB.prepare("SELECT * FROM Customers WHERE CompanyName = ?").bind(someVariable);
+const returnValue = await stmt.raw();
+return Response.json(returnValue);
+```
+```js output
+[
+  [11, "Bs Beverages",
+    "Victoria Ashworth"
+  ],
+  [13, "Bs Beverages",
+    "Random Name"
+  ]
+]
+```
+
+With parameter `columnNames: true`:
+```js
+const someVariable = `Bs Beverages`;
+const stmt = env.DB.prepare("SELECT * FROM Customers WHERE CompanyName = ?").bind(someVariable);
+const returnValue = await stmt.raw({columnNames:true});
+return Response.json(returnValue)
+```
+```js output
+[
+  [
+    "CustomerId",
+    "CompanyName",
+    "ContactName"
+  ],
+  [11, "Bs Beverages",
+    "Victoria Ashworth"
+  ],
+  [13, "Bs Beverages",
+    "Random Name"
+  ]
+]
+```
+</Details>
+
+#### Guidance
+
+- When using TypeScript, you can pass a @type parameter to @`D1PreparedStatement::raw` to return a typed result array.
+
+### `first()`
+
+Runs the prepared query (or queries), and returns the first row of the query result as an object. This does not return any metadata. Instead, it directly returns the object.
+
+```js
+const values = await stmt.first();
+```
+
+#### Parameters
+
+- <code>columnName</code>: <Type text="String"/> <MetaInfo text="Optional"/>
+  - Specify a `columnName` to return a value from a specific column in the first row of the query result.
+- None.
+  - Do not pass a parameter to obtain all columns from the first row.
+
+#### Return values
+
+- <code>firstRow</code>: <Type text="Object"/> <MetaInfo text="Optional"/>
+  - An object containing the first row of the query result.
+  - The return value will be further filtered to a specific attribute if `columnName` was specified.
+
+- `null`: <Type text="null"/>
+  - If the query returns no rows.
+
+<Details header ="Example of return values" open = {false}>
+
+Get all the columns from the first row:
+
+```js
+const someVariable = `Bs Beverages`;
+const stmt = env.DB.prepare("SELECT * FROM Customers WHERE CompanyName = ?").bind(someVariable);
+const returnValue = await stmt.first();
+return Response.json(returnValue)
+```
+```js output
+{
+  "CustomerId": 11,
+  "CompanyName": "Bs Beverages",
+  "ContactName": "Victoria Ashworth"
+}
+```
+
+Get a specific column from the first row:
+
+```js
+const someVariable = `Bs Beverages`;
+const stmt = env.DB.prepare("SELECT * FROM Customers WHERE CompanyName = ?").bind(someVariable);
+const returnValue = await stmt.first(CustomerId);
+return Response.json(returnValue)
+```
+```js output
+11
+```
+</Details>
+
+#### Guidance
+
+- If the query returns rows but `column` does not exist, then @`D1PreparedStatement::first` throws the `D1_ERROR` exception.
+- @`D1PreparedStatement::first` does not alter the SQL query. To improve performance, consider appending statement.
+- When using TypeScript, you can pass a @type parameter to @`D1PreparedStatement::first` to return a typed result object.
+
+---
+
+# Return objects
+
+URL: https://developers.cloudflare.com/d1/worker-api/return-object/
+
+Some D1 Worker Binding APIs return a typed object.
+
+| D1 Worker Binding API                                                                                                          | Return object |
+| ------------------------------------------------------------------------------------------------------------ | ------------- |
+| @`D1PreparedStatement::run`, @`D1Database::batch`| `D1Result`    |
+| @`D1Database::exec`                                                                         | `D1ExecResult`|
+
+## `D1Result`
+
+The methods @`D1PreparedStatement::run` and @`D1Database::batch` return a typed @`D1Result` object for each query statement. This object contains:
+
+- The success status
+- A meta object with the internal duration of the operation in milliseconds
+- The results (if applicable) as an array
+
+```js
+{
+  success: boolean, // true if the operation was successful, false otherwise
+  meta: {
+    served_by: string // the version of Cloudflare's backend Worker that returned the result
+    duration: number, // the duration of the SQL query execution only, in milliseconds
+		changes: number, // the number of changes made to the database
+		last_row_id: number, // the last inserted row ID, only applies when the table is defined without the `WITHOUT ROWID` option
+		changed_db: boolean, // true if something on the database was changed
+    size_after: number, // the size of the database after the query is successfully applied
+    rows_read: number, // the number of rows read (scanned) by this query
+    rows_written: number //ows wy
+  }
+  results: array | null, // [] if empty, or null if it does not apply
+}
+```
+
+### Example
+
+```js
+const someVariablenst stmt = env.DB.prepare("SELECT * FROM Customers WHERE CompanyName = ?").bind(someVariable);
+const returnValue = await stmt.run();
+return Response.json(returnValue)
+```
+```js
+{
+  "success": true,
+  "meta": {
+    "served_by": "miniflare.db",
+    "duration": 1,
+    "changes": 0,
+    "last_row_id": 0,
+    "changed_db": false,
+    "size_after": 8192,
+    "rows_read": 4,
+    "rows_written": 0
+  },
+  "results": [
+    {
+      "CustomerId": 11,
+      "CompanyName": "Bs Beverages",
+      "ContactName": "Victoria Ashworth"
+    },
+    {
+      "CustomerId": 13,
+      "CompanyName": "Bs Beverages",
+      "ContactName": "Random Name"
+    }
+  ]
+}
+```
+
+## `D1ExecResult`
+
+The method @`D1Database::exec` returns a typed @`D1ExecResult` object for each query statement. This object contains:
+
+- The number of executed queries
+- The duration of the operation in milliseconds
+
+```js
+{
+	"count": number, // thethe ople
+
+```js
+const returnValue = await env.DB.exec(`SELECT * FROM Customers WHERE CompanyName = "Bs Beverages"`);
+return Response.json(returnValue);
+```
+```js output
+{
+  "count": 1,
+  "duration": 1
+}
+```
+
+---
+
+# Build a Comments API
+
+URL: https://developers.cloudflare.com/d1/tutorials/build-a-comments-api/
+
+import { Render, PackageManagers, Stream, WranglerConfig } from "~/components";
+
+In this tutorial, you will learn how to use D1 to add comments to a static blog site. To do this, you will construct a new D1 database, and build a JSON API that allows the creation and retrieval of comments.
+
+## Prerequisites
+
+Use @C3, the command-line tool for Cloudflare's developer products, to create a new directory and initialize a new Worker project:
+
+<PackageManagers type="create" pkg="cloudflare@latest" args={"d1-example"} />
+
+<Render
+	file="c3-post-run-steps"
+	product="workers"
+	params={{
+		category: "hello-world",
+		type: "Worker only",
+		lang: "JavaScript",
+	}}
+/>
+
+To start developing your Worker, `cd` into your new project directory:
+
+```sh
+cd d1-example
+```
+
+## Video Tutorial
+
+<Stream
+	id="8d20dd6cf5679f3272ca44a9fa01728c"
+	title="Build a Comments API with D1"
+	thumbnail="22s"
+/>
+
+## 1. Install Hono
+
+In this tutorial, you will use @Hono, an Express.js-style framework, to build your API. To use Hono in this project, install it using `npm`:
+
+```sh
+npm install hono
+```
+
+## 2. Initialize your Hono application
+
+In `src/worker.js`, initialize a new Hono application, and define the following endpoints:
+
+- `GET /api/posts/:slug/comments`.
+- `POST /api/posts/:slug/comments`.
+
+```js
+import { Hono } from "hono";
+
+const app = new Hono();
+
+app.get("/api/posts/:slug/comments", async (c) => {
+	// Do something and return an HTTP response
+	// Optionally, do something with `c.req.param("slug")`
+});
+
+app.post("/api/posts/:slug/comments", async (c) => {
+	// Do something and return an HTTP response
+	// Optionally, do something with `c.req.param("slug")`
+});
+
+export default app;
+```
+
+## 3. Create a database
+
+You will now create a D1 database. In Wrangler, there is support for the `wrangler d1` subcommand, which allows you to create and query your D1 databases directly from the command line. Create a new database with `wrangler d1 create`:
+
+```sh
+npx wrangler d1 create d1-example
+```
+
+Reference your created database in your Worker code by creating a @binding inside of your @Wrangler configuration file. Bindings allow us to access Cloudflare resources, like D1 databases, KV namespaces, and R2 buckets, using a variable name in code. In the Wrangler configuration file, set up the binding `DB` and connect it to the `database_name` and `database_id`:
+
+<WranglerConfig>
+
+```toml
+[[ d1_databases ]]
+binding = "DB" # available in your Worker on `env.DB`
+database_name = "d1-example"
+database_id = "4e1c28a9-90e4-41da-8b4b-6cf36e5abb29"
+```
+
+</WranglerConfig>
+
+With your binding configured in your Wrangler file, you can interact with your database from the command line, and inside your Workers function.
+
+## 4. Interact with D1
+
+Interact with D1 by issuing direct SQL commands using `wrangler d1 execute`:
+
+```sh
+npx wrangler d1 execuote --command "SELECT name FROM sqlite_schema WHERE type ='table'"
+```
+
+```sh output
+
+Executing on d1-example:
+
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”
+â”‚ name  â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚ d1_kv â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”˜
+```
+
+You can also pass a SQL file - perfect for initial data seeding in a single command. Create `schemas/schema.sql`, which will create a new `comments` table for your project:
+
+```sql
+DROP TABLE IF EXISTS comments;
+CREATE TABLE IF NOT EXISTS comments (
+  id integer PRIMARY KEY AUTOINCREMENT,
+  author text NOT NULL,
+  body text NOT NULL,
+  post_slug text NOT NULL
+);
+CREATE INDEX idx_comments_post_slug ON comments (post_slug);
+
+-- Optionally, uncomment the below query to create data
+
+-- INSERT INTO COMMENTS (author, body, post_slug) VALUEstian', 'Great post!```
+
+With the file created, execute the schema file against the D1 database by passing it with the flag `--file`:
+
+```sh
+npx wrangler d1 execute d1-example --remote --file schemas/schema.sql
+```
+
+## 5. Execute SQL
+
+In earlier steps, you created a SQL database and populated il data. Now, you will add a route to your Workers function to retrieve data from that database. Based on your Wrangler configuration in previous steps, your D1 database is now accessible via the `DB` binding. In your code, use the binding to prepare SQL statements and execute them, for example, to retrieve comments:
+
+```js
+app.get("/api/posts/:slug/comments", async (c) => {
+	const { slug } = c.req.param();
+	const { results } = await c.env.DB.prepare(
+		`
+    select * from comments where post_slug = ?
+  `,
+	)
+		.bind(slug)
+		.all();
+	return c.json(results);
+});
+```
+
+The above code makes use of the `prepare`, `bind`, and `all` functions on a D1 binding to prepare and execute a SQL statement. Refer to @D1 Workers Binding API for a list of all methods available.
+
+In this function, you accept a `slug` URL query parameter and set up a new SQL statement where you select all comments with a matching `post_slug` value to your query parameter. You can then return it as a JSON responprevious steps grant read-only access to your data. To create new comments by inserting data into the database, define another endpoint in `src/worker.js`:
+
+```js
+app.post("/api/posts/:slug/comments", async (c) => {
+	const { slug } = c.req.param();
+	const { author, body } = await c.req.json();
+
+	if (!author) return c.text("Missing author value for new comment");
+	if (!body) return c.text("Missing body value for new comment");
+
+	const { success } = await c.env.DB.prepare(
+		`
+    insert into comments (author, body, post_slug) values (?, ?, ?)
+  `,
+	)
+		.bind(author, body, slug)
+		.run();
+
+	if (success) {
+		c.status(201);
+		return c.text("Created");
+	} else {
+		c.status(500);
+		return c.text("Something went wrong");
+	}
+});
+```
+
+## 7. Deploy your Hono application
+
+With your application ready for deployment, use Wrangler to build and deploy your project to the Cloudflare network.
+
+Begin by running `wrangler whoami` to confirm that you are logged in to your Cloudflare account. If you are not logged in, Wrangler will prompt you to login, creating an API key that you can use to make authenticated requests automatically from your local machine.
+
+After you have logged in, confirm that your Wrangler file is configured similarly to what is seen below. You can change the `name` field to a project name of your choice:
+
+
+
+<WranglerConfig>
+
+```toml
+name = "d1-example"
+main = "src/worker.js"
+compatibility_date = "2022-07-15"
+
+[[ d1_databases ]]
+binding = "DB" # available in your Worker on env.DB
+database_name = "<YOUR_DATABASE_NAME>"
+database_id = "<YOUR_DATABASE_UUID>"
+```
+
+</WranglerConfig>
+
+Now, run `npx wrangler deploy` to deploy your project to Cloudflare.
+
+```sh
+npx wrangler deploy
+```
+
+When it has successfully deployed, test the API by making a `GET` request to retrieve comments for an associated post. Since yousts yet, this response will be empty, but it will still make a request to the D1 database regardless, which you can use to confirm that the application has deployed correctly:
+
+```sh
+# Note: Your workers.dev deployment URL may be different
+curl https://d1-example.signalnerve.workers.dev/api/pents
+[
+  {
+    "id": 1,
+    "author": "Kristian",
+    "body": "Hello from the comments section!",
+    "post_slug": "hello-world"
+  }
+]
+```
+n optional frontend
+
+This application is an API back-end, best served for use with a front-end UI for creating and viewing comments. To test this back-end with a prebuild front-end UI, refer to the example UI in the @example-frontend directory. Notably, the @`loadComments` and `submitComment` functions make requests to a deployed version of this site, meaning you can take the frontend and replace the URL with your deployed version of the codebase in this tutorial to use your own data.
+
+Interacting with this API from a front-end will require enabling specific Cross-Origin Resource Sharing (or _CORS_) headers in your back-end API. Hono allows you to enable Cross-Origin Resource Sharing for your application. Import the `cors` module and add it as middleware to your API in `src/worker.js`:
+
+```typescript null {5}
+import { Hono } from "hono";
+import { cors } from "hono/cors";
+
+const app = new Hono();
+app.use("/api/*", cors());
+```
+
+Now, when you make requests to `/api/*`, Hono will automatically generate and add CORS headers to responses from your API, allowing front-end UIs to interact with it without erroring.
+
+## Conclusion
+
+In this example, you built a comments API for powering a blog. To see the full source for this D1-powered comments API, you can visit @cloudflare/workers-sdk/templates/worker-d1-api.
+
+---
+
+# Build an API to access D1 using a proxy Worker
+
+URL: https://developers.cloudflare.com/d1/tutorials/build-an-api-to-access-d1/
+
+import { Render, PackageManagers, Steps, Details, WranglerConfig } from "~/components";
+
+In this tutorial, you will learn how to create an API that allows you to securely run queries against a D1 database.
+
+This is useful if y1 database outside of a Worker omize access controls and/or  can be queried.
+
+D1's built-in @REST API is best suited for administrative use as the global @Cloudflare API rate limit applies.
+
+To access a D1 database outside of a Worker project, you need to create an API using a Won can then securely interact with this API to run D1 queries.
+
+:::note
+
+D1 uses parameterized queries. This prevents SQL injection. To make your API more secure, validate the input using a library like @zod.
+
+:::
+
+## Prerequisites
+
+1. Sign up for a @Cloudflare account.
+2. Install @`Node.js`.
+3. Have an existing D1 database. Refer to @Get started tutorial for="Node.js version manager">
+	Use a Node version manager like @Volta or
+	@nvm to avoid permission issues and change
+	Node.js versions. @Wrangler, discussed
+	later in this guide, requires a Node version of `16.17.0` or later.
+</Details>
+
+## 1. Create a new project
+
+Create a new Worker to create and deploy your API.
+
+<Steps>
+1. Create a Worker named `d1-http` by running:
+
+    <PackageManagers type="create" pkg="cloudflare@latest" args={"d1-http"} />
+
+    <Render
+    	file="c3-post-run-steps"
+    	product="workers"
+ 	category: "hello-world",
+  y",
+    	lang: "TypeScript",
+    	}}
+    />
+
+2.  Change into your new project directory to start developing:
+
+    ```sh frame="none"
+    cd d1-http
+    ```
+
+</Steps>
+
+## 2. Install Hono
+
+In this tutorial, you will use @Hono, an Express.js-style framework, to build the API.
+
+<Steps>
+1. To use Hono in this project, install it using `npm`:
+
+    <PackageManagers type="add" pkg="hono" frame="none" />
+
+</Steps>
+
+## 3. Add an API_KEY
+
+You need an API key to make authenticated calls to the API. To ensure that the API key is secure, add it as a @secreps>
+ local developmentdev.vars` file in the root directory of `d1-h API key in the file as follows.itle=".dev.vars"
+    API_KEY="YOUR_API_KEY"
+    ```
+
+    Replace `YOUR_API_KEY` with a valid string value. You can also generate this value using the following command.
+
+    ```sh
+    openssl rand -base64 32
+    ```
+
+</Steps>
+
+:::note
+In this step, we have defined the name of the API key to be `API_KEY`.
+:::
+
+## 4. Initialize the application
+
+To initialize the application, you need to import the required packages, initialize a new Hono application, and configure the following middleware:
+
+- @Bearer Auth: Adds authentication to the API.
+- @Logger: Allows monitoring the flow of requests and responses.
+- @Pretty JSON: Enables "JSON pretty print" for JSON response bodies.
+
+<Steps>
+1. Replace the contents of the `src/index.ts` file with the code below.
+
+    ```ts title="src/index.ts"
+    import { Hono } from "hono";
+    import { bearerAuth } from "hono/bearer-auth";
+    import { logger } from "hono/logger";
+    import { prettyJSON } from "hono/pretty-json";
+
+    type Bindings = {
+    	API_KEY: string;
+    };
+
+    const app = new Hono<{ Bindings: Bindings }>();
+
+    app.use("*", prettyJSON(), logger(), async (c, next) => {
+    	const auth = bearerAuth({ token: c.env.API_KEY });
+    	return auth(c, next);
+    });
+    ```
+
+</Steps>
+
+## 5. Add API endpoints
+
+<Steps>
+1. Add the following snippet into your `src/index.ts`.
+
+    ```ts title="src/index.ts"
+
+    // Paste this code at the end of the src/index.ts file
+
+    app.post("/api/all", async (c) => {
+    	return c.text("/api/all endpoint");
+    });
+
+    app.post("/api/exec", async (c) => {
+    	return c.text("/api/exec endpoint");
+    });
+
+    app.post("/api/batch", async (c) => {
+    	return c.text("/api/batch endpoint");
+    });
+
+    export default app;
+    ```
+
+    This adds the following endpoints:
+
+    - POST `/api/all`
+    - POST `/api/exec`
+    - POST `/api/batch`
+
+2. Start the development server by running the following command:
+
+   <PackageManagers type="run" args={"dev"} frame="none" />
+
+3. To test the API locally, open a second terminal.
+
+4. In the second terminal, execute the below cURL command. Replace `YOUR_API_KEY` with the value you set in the `.dev.vars` file.
+
+   ```sh frame="none"
+   curl -H "Authorization: Bearer YOUR_API_KEY" "http://localhost:8787/api/all" --data '{}'
+hould get th   ```txt
+   /api/all endpoint
+   ```
+
+5. Stop the local server from he first terminal.
+
+</Steps>
+
+This now set up. You can test the other endpoints and add more endpes not yet return any information from your database. In the next steps, you will create a database, add its bindings, and update the endpoints to interact with the database.
+
+## 6. Create a database
+
+If you do not have a D1 database already, you can create a new database with `wrangler d1 create`.
+
+<Steps>
+
+1.  In your terminal, run:
+
+    ```sh frame="none"
+  eate d1-http-example
+    ```
+
+    You may be askeddflare account. Once logged in, te a new D1 database. Ye a similar output in your terminal.
+
+      âœ… Successfully created DB 'd1-http-eated your new D1 database.
+
+    [[d1_databases]]
+    binding = "DB" # i.e. available in your Worker on env.DB
+    database_name = "d1-http-example"
+    database_id = "1234567890"
+    ```
+
+</Steps>
+
+Make a note of the displayed `database_name` and `data. Youuse this to reference the database by creating a @binding.s>
+1. From your `d1-http` folder, open the Wrangler file, Wrangler's configuration file.e following n the file. Make sure that the `database_name` and abase_id` are correct.
+
+    <Wrangl    [[d1_databases]]
+    binding = "DB" # i.e. available in you    database_name = "
+    database_id = "1234567890"
+WranglerConfig>
+
+3.  In your `src/index.ts` file, update the `Bindings` type by adding `DB: D1Database`.
+
+    ```ts ins={2}
+    type Bindings = {
+    	DB: D1Database;
+    	API_KEY: string;
+    };
+    ```
+
+</Steps>
+
+You can now access the database in the Hono application.
+
+## 8. Create a table
+
+To create a table in yourtabase:
+
+<Steps>
+
+1.  Create a new folder called `schemas` inside your `d1-http` folder.
+2.  Create a new file called `schema.sql`, and paste the following SQL statement into the file.
+
+    ```sql title="schema.sql"
+    DROP TABLE IF EXISTS posts;
+    CREATE TABLE IF NOT EXISTS posts (
+    	id integer PRIMARY KEY AUTOINCREMENT,
+    	author text NOT NULL,
+    	title text NOT NULL,
+    	body text NOT NULL,
+    	post_slug text NOT NULL
+    );
+    INSERT INTO posts (author, title, body, post_slug) VALUES ('Harshil', 'D1 HTTP API', 'Learn to create an API to query your D1 database.','d1-http-api');
+    ```
+
+    The code drops any table named `posts` if it exists, then creates a new table `posts` with the field `id`, `author`, `title`, `body`, and `post_slug`. It then uses an INSERT statement to populate the table.
+
+3.  In your terminal, execute the following command to create this table:
+
+    ```sh frame="none"
+    npx wrangler d1 execute d1-http-example --file=./schemas/schema.sql
+    ```
+
+</Steps>
+
+Upon successful execution, a new table will be added to your database.
+
+:::note
+The table will be created in the local instance of the database. If you want to add this table to your production database, append the above command by adding the `--remote` flag.
+:::
+
+## 9. Query the database
+
+Your application can now access the D1 database. In this step, you will update the API endpoints to query the database and return the result.
+
+<Steps>
+1. In your `src/index.ts` file, update the code as follow.
+
+    ```ts title="src/index.ts" ins={10-21,31-37,47-62} del={9,30,46}
+    // Update the API routes
+
+    /**
+    * Executes the `stmt.run()` method.
+    * https://developers.cloudflare.com/d1/worker-api/prepared-statements/#run
+    */
+
+    async (c) => {
+    		return c.text("/apitry {
+    		let { query, paraq.json();
+    		let stmt = c.env.DB.prepare(query);
+    		if (params) {
+    			stmt = stmt.bind(params);
+    		}
+
+    		const result = await stmt.run();
+    		return c.json(result);
+    	} catch (err) {
+    		return c.json({ error: `Failed to run query: ${err}` }, 500);
+    	}
+    });
+
+    /**
+    * Executes the `db.exec()` method.
+    * https://developers.cloudflare.com/d1/worker-api/d1-database/#exec
+    */
+
+    app.post('/api/exec', async (c) => {
+    		return c.text("/api/exec endpoint");
+    	try {
+    		let { query } = await c.req.json();
+    		let result = await c.env.DB.exec(query);
+    		return c.json(result);
+    	} catch (err) {
+    		return c.json({ error: `Failed to run query: ${err}` }, 500);
+    	}
+    });
+
+    /**
+    * Executes the `db.batch()` method.
+    * https://developers.cloudflare.com/d1/worker-api/d1-database/#batch
+    */
+
+    app.post('/api/batch', async (c) => {
+    		return c.text("/api/batch endpoint");
+    	try {
+    batch } = await c.req.json();
+    		let stmts = [];
+    		for (let query of batch) {
+    			let stmt = c.env.DB.prepare(query.query);
+    			if (query.params) {
+    				stmts.push(stmt.bind(query.params));
+    			} else {
+    				stmts.push(stmt);
+    			}
+    		}
+    		const results = await c.env.DB.batch(stmts);
+    		return c.json(results);
+    	} catch (err) {
+    		return c.json({ error: `Failed to run query: ${err}` }, 500);
+    	}
+    });
+    ...
+    ```
+
+</Steps>
+
+In the above code, the endpoints are updated to receive `query` and `params`. These queries and parameters are passed to the respective functions to interact with the database.
+
+- If the query is successful, you receive the result from the database.
+- If there is an error, the error message is returned.
+
+## 10. Test the API
+
+Now that the API can query the database, you can test it locally.
+
+<Steps>
+1. Start the development server by executing the following command:
+
+    <PackageManagers type="run" args={"devIn a new terminal window, execute the following cURL commands. Make sure to replace `YOUR_API_KEY` with the correct value.
+
+    ```sh title="/api/all"
+    curl -H "Authorization: Bearer YOUR_API_KEY" "http://localhost:87data '{"query": "SELECT title FROM posts WHERE id=?", "params":1}'
+    ```
+
+    ```sh title="/api/batch"
+    curl -H "Authorization: Bearer YOUR_API_K8787/api/batch" --data '{"batch": [ {"query": "SELECT title FROM posts WHERE id=?", "params":1},{"query": "SELECT id FROM posts"}]}'
+    ```
+
+    ```sh title="/api/exec"
+    curl -H "Authorization: Bearer YOUR_API_KEY" "loca--data '{"query": "INSERT INTO postslug) VALUES ('\''Harshil'\'', '\''D1 HTTP API'\'', '\''Learn to create an API to query your D1 database.'\'','\''d1-http-api'\'')" }'
+    ```
+
+</Steps>
+
+If everything is implemented correctly, the above commands should result successful outputs.
+
+## 11.hat everything is working as expected, the last step is to deploy it to the Cloudflare ill use Wrangler to deploy the API.
+
+<Steps>
+1. To use the API in production instead of using it locally, you need to add the table to your remote (production) database. To add the table to your production database, run the following command:
+
+    ```sh frame="none"
+    npx wrangler d1 execute d1-http-example --file=./schemas/schema.sql --remote
+    ```
+
+    You should now be able to view the table on the @Cloudflare dashboard > **Storage & Databases** > **D1**.
+
+2.  To deploy the application to the Cloudflare network, run the following command:
+
+    ```sh frame="none"
+    npx wrangler deploy
+    ```
+
+    ```sh output
+     â›…ï¸ wrangler 3.78.4 (update available 3.78.5)
+    -------------------------------------------------------
+
+    Total Upload: 53.00 KiB / gzip: 13.16 KiB
+    Your worker has access to the following bindings:
+    - D1 Databases:
+      - DB: d1-http-example (DATABASE_ID)
+    Uploaded d1-http (4.29 sec)
+    Deployed d1-http triggers (5.57 sec)
+      [DEPLOYED_APP_LINK]
+    Current Version ID: [BINDING_ID]
+    ```
+
+    Upon successful deployment, you will get the link of the deployed app in the terminal (`DEPLOYED_APP_LINK`). Make a note of it.
+
+3.  Generate a new API key to use in production.
+
+    ```sh
+    openssl rand -base64 32
+    ```
+
+    ```sh output
+    [YOUR_API_KEY]
+    ```
+
+4.  Execute the `wrangler secret put` command to add an API to the deployed project.
+
+    ```sh frame="none"
+    npx wrangler secret put API_KEY
+    ```
+
+    ```sh output
+    âœ” Enter a secret value:
+    ```
+
+    The terminal will prompt you to enter a secret value.
+
+5.  Enter the value of your API key (`YOUR_API_KEY`). Your API key will now be added to your project. Using this value you can make secure API calls to your deployed API.
+
+    ```sh
+    âœ” Enter a secret value: [YOUR_API_ ```sh output
+    ðŸŒ€ Creating the secret for the Worker "d1-http"
+    âœ¨ Success! Uploaded secret API_KEY
+    ```
+
+6.  To test it, run the following cURL command with the correct `YOUR_API_KEY` and `DEPLOYED_APP_LINK`.
+
+    - Use the `YOUR_API_KEY` you have generated as the secret API key.
+    - You can also find your `DEPLOYED_APP_LINK` from the Cloudflare dashboard > **Workers & Pages** > **`d1-http`** > **Settings** > **Domains & Routes**.
+
+    ```sh frame="none"
+    curl -H "Authorization: Bearer YOUR_API_KEY" "https://DEPLOYED_APP_LINK/api/exec" --data '{"query": "SELECT 1"}'
+    ```
+
+</Steps>
+
+## Summary
+
+In this tutorial, you have:
+
+1. Created an API that interacts with your D1 database.
+2. Deployed this API to the Workers. You can use this API in your external application to execute queries against your D1 database. The full code for this tutorial can be found on @GitHub.
+
+## Next steps
+
+You can check out a similar implementation that uses Zod for validation in @this GitHub repository. If you want to build an OpenAPI compliant API for your D1 database, you should use the @Cloudflare Workers OpenAPI 3.1 template.

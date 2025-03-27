@@ -18,12 +18,20 @@ const ErrorSchema = z
   })
   .openapi('Error')
 
-const ImageSchema = createSelectSchema(schema.files)
+const ImageSchema = createSelectSchema(schema.files).extend({
+  properties: z.record(z.string(), z.string()).optional().openapi({
+    description: 'Custom properties associated with the file',
+    example: { property1: 'value1', property2: 'value2' },
+  }),
+  tags: z.array(z.string()).optional().openapi({
+    description: 'Tags associated with the file',
+    example: ['tag1', 'tag2'],
+  }),
+})
 
 // Direct file upload schema
 const UploadImageSchema = z
   .object({
-    // TODO blob validation stopped working?
     file: z.any().openapi({
       type: 'string',
       format: 'binary',
@@ -32,6 +40,14 @@ const UploadImageSchema = z
     filename: z.string().optional().openapi({
       description: 'Optional user-defined filename',
       example: 'my-image.jpg',
+    }),
+    tags: z.array(z.string().min(1).max(64)).optional().openapi({
+      description: 'Tags to add to the image',
+      example: ['tag1', 'tag2'],
+    }),
+    properties: z.record(z.string().min(1).max(64), z.string().max(32000)).optional().openapi({
+      description: 'Properties to add to the image',
+      example: { property1: 'value1', property2: 'value2' },
     }),
     projectId: z.string().optional().openapi({
       description: 'Project ID (defaults to default-project)',
@@ -50,6 +66,14 @@ const IngestImageSchema = z
     filename: z.string().optional().openapi({
       description: 'Optional user-defined filename',
       example: 'my-image.jpg',
+    }),
+    tags: z.array(z.string().min(1).max(64)).optional().openapi({
+      description: 'Tags to add to the image',
+      example: ['tag1', 'tag2'],
+    }),
+    properties: z.record(z.string().min(1).max(64), z.string().max(32000)).optional().openapi({
+      description: 'Properties to add to the image',
+      example: { property1: 'value1', property2: 'value2' },
     }),
     projectId: z.string().optional().openapi({
       description: 'Project ID (defaults to default-project)',
